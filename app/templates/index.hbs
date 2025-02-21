@@ -1,0 +1,13 @@
+<h1 class="header">
+  <img src="assets/images/video-player.png" alt="Logo" class="logo"> ZTube
+</h1>
+
+<div class="search-container">
+  {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up="searchVideos"}}
+</div>
+
+<div class="video-container">
+  {{#each filteredVideos as |video|}}
+    {{video-item video=video}}
+  {{/each}}
+</div>

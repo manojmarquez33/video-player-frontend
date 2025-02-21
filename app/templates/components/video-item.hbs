@@ -1,0 +1,18 @@
+<div class="video-item">
+  {{#if (equal video.fileExtension "mp4")}}
+    {{#link-to "video-details" video.fileName}}
+      <video class="thumbnail" preload="auto" muted autoplay crossorigin="anonymous">
+        <source src="{{video.url}}" type="video/mp4">
+      </video>
+    {{/link-to}}
+  {{else}}
+    <a href="{{video.url}}">
+      <img height="150px" src="assets/images/video-playlist.png" class="thumbnail">
+    </a>
+  {{/if}}
+
+  <p class="video-title">{{video.fileName}}</p>
+  <p class="video-info">{{video.size}}</p>
+  <p class="video-info">Created {{video.daysAgo}} day{{if (greater video.daysAgo 1) "s"}} ago</p>
+  <div class="duration-overlay"></div>
+</div>
