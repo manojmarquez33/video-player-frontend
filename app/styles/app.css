@@ -73,3 +73,10 @@ h1 {
   vertical-align: middle;
   margin-right: 10px;
 }
+
+.no-results {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+  margin-top: 20px;
+}

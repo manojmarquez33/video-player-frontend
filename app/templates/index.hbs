@@ -3,11 +3,15 @@
 </h1>
 
 <div class="search-container">
-  {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up="searchVideos"}}
+  {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
 </div>
 
 <div class="video-container">
-  {{#each filteredVideos as |video|}}
-    {{video-item video=video}}
-  {{/each}}
+  {{#if filteredVideos.length}}
+    {{#each filteredVideos as |video|}}
+      {{video-item video=video}}
+    {{/each}}
+  {{else}}
+    <p class="no-results">No results found.</p>
+  {{/if}}
 </div>

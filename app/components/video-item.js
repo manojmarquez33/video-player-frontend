@@ -14,22 +14,24 @@ export default Ember.Component.extend({
         Ember.run.scheduleOnce("afterRender", this, function () {
           console.log("duration:", videoElement.duration);
 
-          let videoDuration = this.element.querySelector(".duration-overlay");
-          if (!videoDuration) {
-            console.error("duration-overlay not found.");
-            return;
-          }
-          videoDuration.textContent = formatDuration(videoElement.duration);
+          // ✅ Wait for .duration-overlay to be inserted before selecting it
+          Ember.run.next(this, function () {
+            let videoDuration = this.element.querySelector(".duration-overlay");
+            if (!videoDuration) {
+              console.error("❌ duration-overlay not found.");
+              return;
+            }
+            videoDuration.textContent = formatDuration(videoElement.duration);
+          });
         });
       });
 
       videoElement.addEventListener("error", function () {
-        console.error("Error loading video:", videoElement.src);
+        console.error("❌ Error loading video:", videoElement.src);
       });
     }
   }
 });
-
 
 function formatDuration(seconds) {
   if (isNaN(seconds)) {

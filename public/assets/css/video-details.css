@@ -1,0 +1,291 @@
+/* Universal box-sizing for consistency */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f5ff;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  text-align: center;
+  color: #004a99;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+/* Main container: Two-column layout */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Left Section: Video Player and Video Details */
+.left-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Video Container with Aspect Ratio */
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: #000;
+  overflow: hidden;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+/* Video Wrapper to position video absolutely */
+.video-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#videoPlayer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Updated Video Controls */
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Slightly more transparent */
+  padding: 5px 10px; /* Reduced padding */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Show controls when hovering */
+.video-container:hover .video-controls,
+.video-controls:hover {
+  opacity: 1;
+}
+
+/* Video Progress Bar Container */
+.video-progress {
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+/* Video Seek Bar Styling */
+.video-seek-bar {
+  width: 100%;
+  height: 4px; /* Reduced height */
+  appearance: none;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+  margin: 0; /* Remove default margins */
+}
+
+/* Slider thumb styling */
+.video-seek-bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px; /* Slightly smaller thumb */
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.video-seek-bar::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Video Buttons Styling */
+.video-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0; /* Remove default margins */
+}
+
+/* Remove unnecessary margins and paddings */
+.video-buttons button,
+.video-buttons select,
+.video-buttons input[type="range"],
+.video-buttons span {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 14px; /* Slightly smaller font */
+  cursor: pointer;
+  margin: 0 3px; /* Reduced margins */
+  padding: 0; /* Removed padding */
+}
+
+.video-buttons button:hover {
+  color: #e0e0e0;
+}
+
+.video-buttons select {
+  padding: 2px; /* Reduced padding */
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px; /* Reduced border radius */
+}
+
+.video-buttons input[type="range"] {
+  width: 80px; /* Slightly reduced width */
+  height: 4px; /* Reduced height */
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  outline: none;
+  margin: 0; /* Remove default margins */
+}
+
+.video-buttons input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.video-buttons input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Time Display */
+#currentTime,
+#totalTime {
+  min-width: 40px; /* Reduced width */
+  text-align: center;
+  font-size: 12px; /* Slightly smaller font */
+}
+
+/* Video Details */
+.video-details {
+  width: 100%;
+  background: #e6f2ff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  text-align: center;
+}
+
+.video-details p {
+  font-size: 16px;
+  color: #333;
+  margin: 5px 0;
+}
+
+.video-details strong {
+  color: #004a99;
+}
+
+/* Right Section: Control Buttons */
+.right-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button-controls {
+  width: 100%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Styling */
+.button-controls button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 12px; /* Reduced padding */
+  border-radius: 4px; /* Reduced border radius */
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s;
+  font-size: 13px; /* Slightly smaller font */
+  margin: 3px; /* Reduced margin */
+}
+
+.button-controls button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Speed and Skip Controls */
+.speed-control,
+.skip-control {
+  display: flex;
+  align-items: center;
+  margin-top: 10px; /* Reduced margin */
+}
+
+.speed-control label,
+.skip-control label {
+  margin-right: 8px; /* Reduced margin */
+  color: #333;
+}
+
+.speed-control input,
+.skip-control input {
+  font-size: 14px; /* Slightly smaller font */
+  text-align: center;
+  padding: 4px;
+  margin-right: 8px; /* Reduced margin */
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  width: 50px; /* Reduced width */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-section,
+  .right-section {
+    width: 100%;
+  }
+
+  .video-container {
+    max-width: 100%;
+  }
+
+  .button-controls {
+    width: 100%;
+  }
+
+  .video-buttons {
+    flex-wrap: wrap;
+  }
+}
