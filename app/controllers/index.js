@@ -12,7 +12,6 @@ export default Ember.Controller.extend({
     searchVideos() {
       console.log("🔍 Searching for:", this.get('searchQuery'));
 
-      // ✅ Ensure UI updates when searchQuery changes
       this.notifyPropertyChange('filteredVideos');
     }
   }

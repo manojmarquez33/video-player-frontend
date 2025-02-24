@@ -25,11 +25,11 @@ export default Ember.Controller.extend({
     let video = document.getElementById('videoPlayer');
 
     if (!video) {
-      console.error('Error: Video element not found in the DOM.');
+      console.error('Error: Video element not found in document.');
       return;
     }
 
-    video.crossOrigin = 'anonymous'; // For downloadFrame functionality
+    video.crossOrigin = 'anonymous';
 
     this.set('videoElement', video);
 
@@ -97,9 +97,6 @@ export default Ember.Controller.extend({
     let video = this.get('videoElement');
 
     if (!isNaN(speed) && speed > 0) {
-      if (speed > 4) {
-        speed = 4;
-      }
 
       this.set('selectedSpeed', speed);
       video.playbackRate = speed;
@@ -112,6 +109,8 @@ export default Ember.Controller.extend({
 
 
   actions: {
+
+
     togglePlay() {
       let video = this.get('videoElement');
 
@@ -143,11 +142,7 @@ export default Ember.Controller.extend({
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 
-      let speed = this.get('selectedSpeed') || 1;
-
-      if (speed > 4) {
-        speed = 4;
-      }
+      let speed = this.get('selectedSpeed');
 
       video.playbackRate = speed;
       video.play();
@@ -159,7 +154,7 @@ export default Ember.Controller.extend({
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 
-      let speed = this.get('selectedSpeed') || 1;
+      let speed = this.get('selectedSpeed');
       const fps = 10;
 
       this.intervalRewind = setInterval(() => {
@@ -180,27 +175,24 @@ export default Ember.Controller.extend({
       clearInterval(this.intervalForward);
       video.pause();
       video.playbackRate = 1;
-      video.currentTime = 0;
+
       this.set('isPlaying', false);
     },
 
-    setPlaybackSpeed(speedValue) {
-      let video = this.get('videoElement');
-      let speed = parseFloat(speedValue) || parseFloat(document.getElementById('speedInput').value);
-
-      if (!isNaN(speed) && speed > 0) {
-        if (speed > 4) {
-          speed = 4;
-        }
-
-        this.set('selectedSpeed', speed);
-        video.playbackRate = speed;
-
-        if (this.get('isPlaying')) {
-          video.play();
-        }
-      }
-    },
+    // setPlaybackSpeed(speedValue) {
+    //   let video = this.get('videoElement');
+    //   let speed = parseFloat(speedValue) || parseFloat(document.getElementById('speedInput').value);
+    //
+    //   if (!isNaN(speed) && speed > 0) {
+    //
+    //     this.set('selectedSpeed', speed);
+    //     video.playbackRate = speed;
+    //
+    //     if (this.get('isPlaying')) {
+    //       video.play();
+    //     }
+    //   }
+    // },
 
 
     setPlaybackSpeedFromDropdown() {
@@ -227,10 +219,27 @@ export default Ember.Controller.extend({
       let video = this.get('videoElement');
       let skipInput = document.getElementById('skipInput').value;
       let skipSec = parseFloat(skipInput);
+
       if (!isNaN(skipSec) && skipSec >= 0 && skipSec <= video.duration) {
-        video.currentTime = skipSec;
+        let isBuff = false;
+
+        for (let i = 0; i < video.buffered.length; i++) {
+          const start = video.buffered.start(i);
+          const end = video.buffered.end(i);
+
+          if (skipSec >= start && skipSec <= end) {
+            isBuff = true;
+            break;
+          }
+        }
+
+        if (isBuff) {
+          video.currentTime = skipSec;
+        } else {
+          alert("Your selection can't load.");
+        }
       } else {
-        alert('Invalid time or time is beyond video duration.');
+        alert('You entered sec more than duration.');
       }
     },
 
@@ -270,7 +279,7 @@ export default Ember.Controller.extend({
       // video.currentTime = 0;
       // this.set('isPlaying', false);
 
-      // Clear intervals
+
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 
@@ -310,11 +319,26 @@ export default Ember.Controller.extend({
     downloadFrame() {
       let video = this.get('videoElement');
 
+      let curZoom = this.get('curZoom') || 1;
+      let moveX = this.get('moveX') || 0;
+      let moveY = this.get('moveY') || 0;
+
 
       let canvas = document.createElement('canvas');
       let ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+
+
+      let canvasWidth = video.videoWidth * curZoom + Math.abs(moveX);
+      let canvasHeight = video.videoHeight * curZoom + Math.abs(moveY);
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+
+      ctx.translate(moveX, moveY);
+      ctx.scale(curZoom, curZoom);
+
+
+      ctx.filter = getComputedStyle(video).filter;
 
 
       ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
@@ -329,6 +353,7 @@ export default Ember.Controller.extend({
         URL.revokeObjectURL(url);
       }, 'image/png');
     },
+
   },
 
 
@@ -352,7 +377,6 @@ export default Ember.Controller.extend({
     let maxMoveX = (videoWidth - wrapperWidth) / 2;
     let maxMoveY = (videoHeight - wrapperHeight) / 2;
 
-    // Restrict movement to prevent showing black background
     if (videoWidth > wrapperWidth) {
       let moveX = this.get('moveX');
       moveX = Math.max(-maxMoveX, Math.min(moveX, maxMoveX));
@@ -411,11 +435,11 @@ export default Ember.Controller.extend({
   updateVideoBar() {
     let video = this.get('videoElement');
     let videoBar = document.getElementById('videoBar');
-    let currentTimeLabel = document.getElementById('currentTime');
+    let currentTime = document.getElementById('currentTime');
 
-    if (video && videoBar && currentTimeLabel) {
+    if (video && videoBar && currentTime) {
       videoBar.value = video.currentTime;
-      currentTimeLabel.textContent = this.formatTime(video.currentTime);
+      currentTime.textContent = this.formatTime(video.currentTime);
       if (this.get('isPlaying')) {
         requestAnimationFrame(this.updateVideoBar.bind(this));
       }

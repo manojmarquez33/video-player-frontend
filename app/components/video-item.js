@@ -14,7 +14,6 @@ export default Ember.Component.extend({
         Ember.run.scheduleOnce("afterRender", this, function () {
           console.log("duration:", videoElement.duration);
 
-          // ✅ Wait for .duration-overlay to be inserted before selecting it
           Ember.run.next(this, function () {
             let videoDuration = this.element.querySelector(".duration-overlay");
             if (!videoDuration) {
@@ -27,7 +26,7 @@ export default Ember.Component.extend({
       });
 
       videoElement.addEventListener("error", function () {
-        console.error("❌ Error loading video:", videoElement.src);
+        console.error(" Error loading video:", videoElement.src);
       });
     }
   }
