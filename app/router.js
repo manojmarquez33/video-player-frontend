@@ -6,8 +6,8 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-
   this.route('video-details', { path: '/video-details/:video_name' });
+  this.route('video-playlist');
 });
 
 

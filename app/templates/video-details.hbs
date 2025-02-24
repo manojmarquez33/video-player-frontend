@@ -1,103 +1,108 @@
-  <link rel="stylesheet" href="assets/css/video-details.css">
-  <a href="/" class="back-button">&#8592; Back</a>
+<link rel="stylesheet" href="assets/css/video-details.css">
+<link rel="icon" type="image/png" href="assets/images/video-player.png">
+<a href="/" class="back-button">&#8592; Back</a>
 
-  <div class="container">
-
-    <div class="left-section">
-      <div class="video-container">
-        <div class="video-wrapper">
-          <video id="videoPlayer">
-            <source src="{{model.url}}" type="video/mp4">
-          </video>
-        </div>
-
-        <div class="video-controls">
-
-          <div class="video-buttons">
-            <span id="currentTime">0:00</span>
-            <button {{action "togglePlay"}} id="playPause"> ▶ </button>
-            <button {{action "skipBackward"}}> ◁ </button>
-            <button {{action "skipForward"}}> ▷ </button>
-            <button {{action "fastRewind"}}>⏮</button>
-            <button {{action "fastForward"}}>⏭</button>
-
-           <select id="playbackSpeed" {{action "setPlaybackSpeedFromDropdown" on="change"}}>
-             <option value="0.5">0.5x</option>
-             <option value="1">1x</option>
-             <option value="1.5">1.5x</option>
-             <option value="2">2x</option>
-             <option value="4">4x</option>
-           </select>
-
-            <input
-              type="range"
-              id="volumeBar"
-              value="1"
-              min="0"
-              max="1"
-              step="0.01"
-              {{action "setVolume" value="value" on="input"}}
-            />
-
-            <button {{action "zoomIn"}}>+</button>
-            <button {{action "zoomOut"}}>-</button>
-            <button {{action "resetVideo"}}>reset</button>
-
-
-            <button {{action "toggleFullScreen"}}>⛶</button>
-            <span id="totalTime">0:00</span>
-          </div>
-        <div class="video-progress">
-                  <input
-                    type="range"
-                    id="videoBar"
-                    class="video-seek-bar"
-                    value="0"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                  >
-                </div>
-        </div>
+<div class="container">
+  <div class="left-section">
+    <div class="video-container">
+      <div class="video-wrapper">
+        <video id="videoPlayer">
+          <source src="{{model.url}}" type="video/mp4">
+        </video>
       </div>
 
+      <div class="video-controls">
+        <div class="video-buttons">
+          <span id="currentTime">0:00</span>
 
-      <div class="video-details">
-        <p><strong>Video Name:</strong> {{model.fileName}}</p>
-        <p><strong>Size:</strong> {{model.size}}</p>
-        <p><strong>Duration:</strong> <span id="videoDuration">Loading...</span></p>
+          <button {{action "togglePlay"}} id="playPause">
+            {{#if isPlaying}}
+              ⏸
+            {{else}}
+              ▶
+            {{/if}}
+          </button>
+
+          <button {{action "skipBackward"}}>◁</button>
+          <button {{action "skipForward"}}>▷</button>
+          <button {{action "fastRewind"}}>⏮</button>
+          <button {{action "fastForward"}}>⏭</button>
+
+          <select id="playbackSpeed" {{action "setPlaybackSpeedFromDropdown" on="change"}}>
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+            <option value="4">4x</option>
+          </select>
+
+          <input
+            type="range"
+            id="volumeBar"
+            value="1"
+            min="0"
+            max="1"
+            step="0.01"
+            {{action "setVolume" value="value" on="input"}}
+          />
+
+          <button {{action "zoomIn"}}>+</button>
+          <button {{action "zoomOut"}}>-</button>
+          <button {{action "resetVideo"}}>Reset</button>
+
+          <button {{action "toggleFullScreen"}}>⛶</button>
+          <span id="totalTime">0:00</span>
+        </div>
+
+        <div class="video-progress">
+          <input
+            type="range"
+            id="videoBar"
+            class="video-seek-bar"
+            value="0"
+            min="0"
+            max="100"
+            step="0.1"
+          >
+        </div>
       </div>
     </div>
 
-    <div class="right-section">
-      <div class="button-controls">
-        <div class="group">
-          <button {{action "togglePlay"}}>Play/Pause</button>
-          <button {{action "stopVideo"}}>Stop Video</button>
-        </div>
-        <div class="group">
-          <button {{action "skipBackward"}}>Skip Backward</button>
-          <button {{action "skipForward"}}>Skip Forward</button>
-        </div>
-          <div class="speed-control">
-            <label for="speedInput">Speed</label>
-            <input type="text" id="speedInput" placeholder="1" />
-            <button {{action "setPlaybackSpeedFromInput"}}>Set Speed</button>
+    <div class="video-details">
+      <p><strong>Video Name:</strong> {{model.fileName}}</p>
+      <p><strong>Size:</strong> {{model.size}}</p>
+      <p><strong>Duration:</strong> <span id="videoDuration">Loading...</span></p>
+    </div>
+  </div>
 
-          </div>
-          <div class="group">
-            <button {{action "fastRewind"}}>⏮ Fast Rewind</button>
-            <button {{action "fastForward"}}>⏭ Fast Forward</button>
-          </div>
-        <div class="skip-control">
-          <label for="skipInput">Skip</label>
-          <input type="number" id="skipInput" placeholder="Enter seconds" />
-          <button {{action "skipToSec"}}>Skip</button>
-        </div>
-        <div class="group">
-          <button {{action "downloadFrame"}}>Download Frame</button>
-          <button {{action "convertBlackAndWhite"}}>🖤 Black & White</button>
-        </div>
+  <div class="right-section">
+    <div class="button-controls">
+      <div class="group">
+        <button {{action "togglePlay"}}>Play/Pause</button>
+        <button {{action "stopVideo"}}>Stop Video</button>
+      </div>
+      <div class="group">
+        <button {{action "skipBackward"}}>Skip Backward</button>
+        <button {{action "skipForward"}}>Skip Forward</button>
+      </div>
+      <div class="speed-control">
+        <label for="speedInput">Speed</label>
+        <input type="text" id="speedInput" placeholder="1" />
+        <button {{action "setPlaybackSpeedFromInput"}}>Set Speed</button>
+      </div>
+      <div class="group">
+        <button {{action "fastRewind"}}>⏮ Fast Rewind</button>
+        <button {{action "fastForward"}}>⏭ Fast Forward</button>
+      </div>
+      <div class="skip-control">
+        <label for="skipInput">Skip</label>
+        <input type="number" id="skipInput" placeholder="Enter seconds" />
+        <button {{action "skipToSec"}}>Skip</button>
+      </div>
+      <div class="group">
+        <button {{action "downloadFrame"}}>Download Frame</button>
+        <button {{action "convertBlackAndWhite"}}>🖤 Black & White</button>
       </div>
     </div>
   </div>
+</div>
