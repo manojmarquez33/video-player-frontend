@@ -5,10 +5,10 @@
         <source src="{{video.url}}" type="video/mp4">
       </video>
     {{/link-to}}
-  {{else}}
-    <a href="{{video.url}}">
+  {{else if (equal video.fileExtension "txt")}}
+    {{#link-to "video-playlist" video.fileName}}
       <img height="150px" src="assets/images/video-playlist.png" class="thumbnail">
-    </a>
+    {{/link-to}}
   {{/if}}
 
   <p class="video-title">{{video.fileName}}</p>

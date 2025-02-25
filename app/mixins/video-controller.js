@@ -2,20 +2,32 @@ import Ember from 'ember';
 
 export default Ember.Mixin.create({
   actions: {
-    togglePlay() {
-      let video = this.get('videoElement');
 
-      if (video.paused || video.ended) {
-        video.play();
-        this.set('isPlaying', true);
-        let speed = this.get('selectedSpeed');
-        video.playbackRate = speed;
+    playbackRate: 1.0,
+
+    togglePlay() {
+      const videoElement = this.get('videoElement');
+      const playbackRate = parseFloat(this.get('playbackRate'));
+
+      if (!videoElement) {
+        console.error("❌ Video element not found!");
+        return;
+      }
+
+
+      if (isNaN(playbackRate) || !isFinite(playbackRate)) {
+        console.error("Invalid playbackRate:", playbackRate);
+        videoElement.playbackRate = 1.0; // Fallback to default
       } else {
-        video.pause();
+        videoElement.playbackRate = playbackRate;
+      }
+
+      if (videoElement.paused) {
+        videoElement.play();
+        this.set('isPlaying', true);
+      } else {
+        videoElement.pause();
         this.set('isPlaying', false);
-        video.playbackRate = 1;
-        clearInterval(this.intervalRewind);
-        clearInterval(this.intervalForward);
       }
     },
 

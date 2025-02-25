@@ -6,6 +6,10 @@ export default Ember.Component.extend({
 
     let videoElement = this.element.querySelector("video");
 
+    if (!videoElement) {
+      console.error("❌ videoPlayer element not found.");
+      return;
+    }
     if (videoElement) {
       videoElement.setAttribute("crossorigin", "anonymous");
       videoElement.load();
