@@ -9,7 +9,7 @@ Router.map(function() {
   this.route('video-details', { path: '/video-details/:video_name' });
 
 
-  this.route('video-playlist', { path: '/video-playlist/:playlist_id' });
+  this.route('video-playlist', { path: '/video-playlist/:playlist_name' });
 
 });
 

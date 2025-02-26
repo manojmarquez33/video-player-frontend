@@ -1,6 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Mixin.create({
+
   onLoadTotalTime() {
     const videoElement = this.get('videoElement');
     if (!videoElement) {
@@ -8,8 +9,19 @@ export default Ember.Mixin.create({
       return;
     }
 
-    const totalDuration = this.get('isPlayList') ? this.get('totalDuration') : videoElement.duration;
-    document.getElementById('totalTime').innerText = this.formatTime(totalDuration);
+    let totalDuration;
+
+    if (this.get('isPlayList')) {
+      totalDuration = this.get('totalDuration');
+    } else {
+      totalDuration = videoElement.duration;
+    }
+
+    const totalTimeElement = document.getElementById('totalTime');
+    if (totalTimeElement) {
+      totalTimeElement.innerText = this.formatTime(totalDuration);
+    }
+
     const videoBar = document.getElementById('videoBar');
     if (videoBar) {
       videoBar.max = totalDuration;
@@ -18,7 +30,7 @@ export default Ember.Mixin.create({
 
   onTimeUpdate() {
     const videoElement = this.get('videoElement');
-    if (!videoElement || this.get('isSeeking')) {
+    if (!videoElement) {
       return;
     }
 
@@ -31,12 +43,16 @@ export default Ember.Mixin.create({
       const videoDurations = this.get('videoDurations');
 
       if (!videoDurations || videoDurations.length === 0) {
-        console.error("❌ videoDurations array is empty or undefined.");
+        console.error("video durations array is 0.");
         return;
       }
 
-      elapsedTime = videoDurations.slice(0, currentVideoIndex).reduce((acc, dur) => acc + dur, 0);
-      elapsedTime += videoElement.currentTime;
+      let loadedTime = 0;
+      for (let i = 0; i < currentVideoIndex; i++) {
+        loadedTime += videoDurations[i];
+      }
+
+      elapsedTime = loadedTime + videoElement.currentTime;
     } else {
       elapsedTime = videoElement.currentTime;
     }
@@ -49,7 +65,7 @@ export default Ember.Mixin.create({
       currentTimeElement.innerText = this.formatTime(elapsedTime);
     }
 
-    console.log("⏳ Updated current time:", this.formatTime(elapsedTime));
+    //console.log("current time:", this.formatTime(elapsedTime));
   },
 
   onVideoBarInput(event) {
@@ -60,11 +76,11 @@ export default Ember.Mixin.create({
       const videoList = this.get('videoList');
       const videoDurations = this.get('videoDurations');
 
-      for (let i = 0, accumulatedTime = 0; i < videoList.length; i++) {
+      for (let i = 0, loadedTime = 0; i < videoList.length; i++) {
         const videoDuration = videoDurations[i];
 
-        if (seekTime < accumulatedTime + videoDuration) {
-          const adjustedTime = seekTime - accumulatedTime;
+        if (seekTime < loadedTime + videoDuration) {
+          const adjustedTime = seekTime - loadedTime;
 
           if (this.get('currentVideoIndex') !== i) {
             this.set('currentVideoIndex', i);
@@ -81,7 +97,7 @@ export default Ember.Mixin.create({
           break;
         }
 
-        accumulatedTime += videoDuration;
+        loadedTime += videoDuration;
       }
     } else {
       if (videoElement) {
@@ -90,20 +106,4 @@ export default Ember.Mixin.create({
     }
   },
 
-  formatTime(seconds) {
-    if (isNaN(seconds) || seconds < 0) {
-      return "00:00";
-    }
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-
-    return [
-      hrs > 0 ? hrs.toString().padStart(2, '0') : null,
-      mins.toString().padStart(2, '0'),
-      secs.toString().padStart(2, '0'),
-    ]
-      .filter(Boolean)
-      .join(":");
-  },
 });

@@ -9,54 +9,22 @@ export default Ember.Mixin.create({
 
   loadPlaylist() {
     const model = this.get('model');
-    console.log("📦 Model contents:", model);
 
-    if (model && Array.isArray(model.videoList)) {
-      const videos = model.videoList;
-      console.log("✅ Using videoList from model:", videos);
-
-      const videoUrls = videos.map(video => video.url);
-      this.setProperties({
-        videoList: videoUrls,
-        videoDurations: new Array(videoUrls.length).fill(0),
-        currentVideoIndex: 0,
-      });
-
-      this.preloadDurations();
-    } else if (typeof model === 'object' && model.playlist_id) {
-      const playlistFile = model.playlist_id;
-      console.log("🎬 Fetching playlist:", playlistFile);
-
-      fetch(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(playlistFile)}&metadata=true`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`❌ HTTP Error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(videos => {
-          if (!Array.isArray(videos) || videos.length === 0) {
-            console.error("❌ No valid videos found in the playlist.");
-            return;
-          }
-
-          console.log("✅ Playlist videos fetched:", videos);
-          const videoUrls = videos.map(video => video.url);
-          this.setProperties({
-            videoList: videoUrls,
-            videoDurations: new Array(videoUrls.length).fill(0),
-            currentVideoIndex: 0,
-          });
-
-          this.preloadDurations();
-        })
-        .catch(error => {
-          console.error("❌ Error fetching playlist:", error);
-        });
-    } else {
-      console.error("❌ Playlist file is missing or invalid!");
+    if (!model || !Array.isArray(model.videoList)) {
+      console.error("missing playlist data");
       return;
     }
+
+    //console.log("check list datas are correct:", model.videoList);
+
+    const videoUrls = model.videoList.map(video => video.url);
+    this.setProperties({
+      videoList: videoUrls,
+      videoDurations: new Array(videoUrls.length).fill(0),
+      currentVideoIndex: 0,
+    });
+
+    this.preloadDurations();
   },
 
   preloadDurations(index = 0) {
@@ -64,19 +32,30 @@ export default Ember.Mixin.create({
     const videoDurations = this.get('videoDurations');
 
     if (index >= videoList.length) {
-      const totalDuration = videoDurations.reduce((acc, dur) => acc + dur, 0);
-      this.set('totalDuration', totalDuration);
-      sessionStorage.setItem("totalPlaylistDuration", totalDuration);
 
-      document.getElementById("totalTime").textContent = this.formatTime(totalDuration);
+      let totalDuration = 0;
+      for (let i = 0; i < videoDurations.length; i++) {
+        totalDuration += videoDurations[i];
+      }
+
+      this.set('totalDuration', totalDuration);
+
+      const totalTime = document.getElementById("totalTime");
+
+      if (totalTime) {
+        totalTime.textContent = this.formatTime(totalDuration);
+      }
+
       const videoBar = document.getElementById('videoBar');
       if (videoBar) {
         videoBar.max = totalDuration;
       }
 
       const videoElement = this.get('videoElement');
-      videoElement.src = videoList[0];
-      videoElement.load();
+      if (videoElement) {
+        videoElement.src = videoList[0];
+        videoElement.load();
+      }
       return;
     }
 
@@ -86,15 +65,17 @@ export default Ember.Mixin.create({
 
     tempVideo.onloadedmetadata = () => {
       videoDurations[index] = tempVideo.duration || 0;
-      console.log(`Loaded duration for video ${index}:`, videoDurations[index]);
+
+      console.log(`duration ${index}:`, videoDurations[index]);
+
       this.preloadDurations(index + 1);
     };
 
-    tempVideo.onerror = () => {
-      console.error(`❌ Error loading video metadata for ${videoList[index]}`);
-      videoDurations[index] = 0;
-      this.preloadDurations(index + 1);
-    };
+    // tempVideo.onerror = () => {
+    //   console.error(`Error loading video metadata for ${videoList[index]}`);
+    //   videoDurations[index] = 0;
+    //   this.preloadDurations(index + 1);
+    // };
   },
 
   playNextVideo() {
@@ -102,24 +83,21 @@ export default Ember.Mixin.create({
     const videoList = this.get('videoList');
     const videoElement = this.get('videoElement');
 
-    console.log("playNextVideo called, currentVideoIndex:", currentVideoIndex);
-
-    if (currentVideoIndex < videoList.length - 1) {
-      currentVideoIndex++;
-      this.set('currentVideoIndex', currentVideoIndex);
-
-      videoElement.src = videoList[currentVideoIndex];
-      videoElement.load();
-
-      videoElement.onloadeddata = () => {
-        videoElement.currentTime = 0;
-        videoElement.play();
-      };
-    } else {
-      console.log("🚀 Playlist finished");
+    if (!videoElement || currentVideoIndex >= videoList.length - 1) {
       this.set('currentVideoIndex', 0);
       videoElement.src = videoList[0];
       videoElement.load();
+      return;
     }
+
+    this.set('currentVideoIndex', currentVideoIndex + 1);
+
+    videoElement.src = videoList[this.get('currentVideoIndex')];
+    videoElement.load();
+
+    videoElement.onloadeddata = () => {
+      videoElement.currentTime = 0;
+      videoElement.play();
+    };
   }
 });

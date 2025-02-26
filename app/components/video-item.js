@@ -7,32 +7,24 @@ export default Ember.Component.extend({
     let videoElement = this.element.querySelector("video");
 
     if (!videoElement) {
-      console.error("❌ videoPlayer element not found.");
       return;
     }
-    if (videoElement) {
-      videoElement.setAttribute("crossorigin", "anonymous");
-      videoElement.load();
 
-      videoElement.addEventListener("loadedmetadata", () => {
-        Ember.run.scheduleOnce("afterRender", this, function () {
-          console.log("duration:", videoElement.duration);
+    videoElement.setAttribute("crossorigin", "anonymous");
+    videoElement.load();
 
-          Ember.run.next(this, function () {
-            let videoDuration = this.element.querySelector(".duration-overlay");
-            if (!videoDuration) {
-              console.error("❌ duration-overlay not found.");
-              return;
-            }
+    videoElement.addEventListener("loadedmetadata", () => {
+      Ember.run.scheduleOnce("afterRender", this, function () {
+        console.log("duration:", videoElement.duration);
+
+        Ember.run.next(this, function () {
+          let videoDuration = this.element ? this.element.querySelector(".duration-overlay") : null;
+          if (videoDuration) {
             videoDuration.textContent = formatDuration(videoElement.duration);
-          });
+          }
         });
       });
-
-      videoElement.addEventListener("error", function () {
-        console.error(" Error loading video:", videoElement.src);
-      });
-    }
+    });
   }
 });
 

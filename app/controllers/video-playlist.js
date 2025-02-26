@@ -29,7 +29,7 @@ export default Ember.Controller.extend(
 
     init() {
       this._super(...arguments);
-      Ember.run.scheduleOnce('afterRender', this, this.setupVideoPlayer);
+        Ember.run.scheduleOnce('afterRender', this, this.setupVideoPlayer);
     },
   }
 );

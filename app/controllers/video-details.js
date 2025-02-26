@@ -12,12 +12,11 @@ export default Ember.Controller.extend(
   ZoomDrag,
   VideoUtils,
   {
-    isPlayList: true,
+    isPlayList: false,
     selectedSpeed: 1,
     isPlaying: false,
     videoElement: null,
-    intervalRewind: null,
-    intervalForward: null,
+
 
     init() {
       this._super(...arguments);

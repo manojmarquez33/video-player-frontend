@@ -10,8 +10,7 @@ export default Ember.Controller.extend({
 
   actions: {
     searchVideos() {
-      console.log("🔍 Searching for:", this.get('searchQuery'));
-
+      //console.log("curent search:", this.get('searchQuery'));
       this.notifyPropertyChange('filteredVideos');
     }
   }

@@ -5,6 +5,7 @@
 <div class="container">
   <div class="left-section">
     <div class="video-container">
+
       <div class="video-wrapper">
         <video id="videoPlayer">
           <source id="videoSource">
@@ -16,6 +17,7 @@
           <span id="currentTime">0:00</span>
 
           <button {{action "togglePlay"}} id="playPause">
+
             {{#if isPlaying}}
               ⏸
             {{else}}
@@ -72,23 +74,6 @@
 
   <div class="right-section">
     <div class="button-controls">
-      <div class="group">
-        <button {{action "togglePlay"}}>Play/Pause</button>
-        <button {{action "stopVideo"}}>Stop Video</button>
-      </div>
-      <div class="group">
-        <button {{action "skipBackward"}}>Skip Backward</button>
-        <button {{action "skipForward"}}>Skip Forward</button>
-      </div>
-      <div class="speed-control">
-        <label for="speedInput">Speed</label>
-        <input type="text" id="speedInput" placeholder="1" />
-        <button {{action "setPlaybackSpeedFromInput"}}>Set Speed</button>
-      </div>
-      <div class="group">
-        <button {{action "fastRewind"}}>⏮ Fast Rewind</button>
-        <button {{action "fastForward"}}>⏭ Fast Forward</button>
-      </div>
       <div class="skip-control">
         <label for="skipInput">Skip</label>
         <input type="number" id="skipInput" placeholder="Enter seconds" />

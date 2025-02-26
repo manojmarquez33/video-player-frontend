@@ -1,26 +1,27 @@
 import Ember from 'ember';
 
 export default Ember.Mixin.create({
+
   actions: {
 
     playbackRate: 1.0,
 
     togglePlay() {
       const videoElement = this.get('videoElement');
-      const playbackRate = parseFloat(this.get('playbackRate'));
+      let playbackRate = parseFloat(this.get('playbackRate'));
 
       if (!videoElement) {
-        console.error("❌ Video element not found!");
+        console.error("Video element not found!");
         return;
       }
 
-
       if (isNaN(playbackRate) || !isFinite(playbackRate)) {
-        console.error("Invalid playbackRate:", playbackRate);
-        videoElement.playbackRate = 1.0; // Fallback to default
-      } else {
-        videoElement.playbackRate = playbackRate;
+        playbackRate = 1.0;
+        this.set('playbackRate', playbackRate);
       }
+
+
+      videoElement.playbackRate = playbackRate;
 
       if (videoElement.paused) {
         videoElement.play();
@@ -58,7 +59,7 @@ export default Ember.Mixin.create({
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 
-      let speed = this.get('selectedSpeed') || 2; // Default rewind speed
+      let speed = this.get('selectedSpeed') || 2;
       const fps = 60;
 
       this.intervalRewind = setInterval(() => {
@@ -126,7 +127,7 @@ export default Ember.Mixin.create({
           alert("Your selection can't load.");
         }
       } else {
-        alert('You entered a time beyond the video duration.');
+        alert('You entered a time beofre the video duration.');
       }
     },
 
@@ -153,11 +154,11 @@ export default Ember.Mixin.create({
 
       document.getElementById('volumeBar').value = 1;
       document.getElementById('playbackSpeed').value = 1;
-      document.getElementById('speedInput').value = '';
+      //document.getElementById('speedInput').value = '1';
 
-      video.pause();
-      video.currentTime = 0;
-      this.set('isPlaying', false);
+      // video.pause();
+      // video.currentTime = 0;
+      // this.set('isPlaying', false);
     },
 
     toggleFullScreen() {
@@ -236,4 +237,6 @@ export default Ember.Mixin.create({
       alert('Please enter a valid playback speed.');
     }
   },
+
+
 });
