@@ -3,6 +3,7 @@ import Ember from 'ember';
 export default Ember.Mixin.create({
   setupVideoPlayer() {
     const videoElement = document.getElementById('videoPlayer');
+    const circleLoader = document.getElementById('circleLoader');
 
     if (!videoElement) {
       console.error("Video not found!");
@@ -11,6 +12,29 @@ export default Ember.Mixin.create({
 
     videoElement.crossOrigin = 'anonymous';
     this.set('videoElement', videoElement);
+
+
+    videoElement.addEventListener('waiting', () => {
+      circleLoader.classList.remove('hidden');
+    });
+
+
+    videoElement.addEventListener('playing', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('canplay', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('stalled', () => {
+      circleLoader.classList.remove('hidden');
+    });
+
+    videoElement.addEventListener('error', () => {
+      circleLoader.classList.add('hidden');
+    });
+
 
     const videoBar = document.getElementById('videoBar');
     const volumeBar = document.getElementById('volumeBar');
@@ -58,14 +82,39 @@ export default Ember.Mixin.create({
   loadSingleVideo() {
     const videoElement = this.get('videoElement');
     const videoModel = this.get('model');
+    const circleLoader = document.getElementById('circleLoader');
+
+    if (!videoElement || !circleLoader) {
+      console.error("Video element or loading spinner not found!");
+      return;
+    }
 
     if (videoModel && videoModel.fileName) {
       const videoFileName = videoModel.fileName;
+
+
+      circleLoader.classList.remove('hidden');
+
       videoElement.src = `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(videoFileName)}`;
       videoElement.load();
+
+
+      videoElement.addEventListener('canplay', () => {
+        circleLoader.classList.add('hidden');
+      });
+
+      videoElement.addEventListener('playing', () => {
+        circleLoader.classList.add('hidden');
+      });
+
+      videoElement.addEventListener('error', () => {
+        console.error("Error loading video.");
+        circleLoader.classList.add('hidden');
+      });
     } else {
-      console.error("Video file name is missing");
+      console.error("Video file name is missing!");
     }
   }
+
 
 });

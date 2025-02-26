@@ -5,7 +5,7 @@ export default Ember.Mixin.create({
   onLoadTotalTime() {
     const videoElement = this.get('videoElement');
     if (!videoElement) {
-      console.error("❌ Video element not found!");
+      console.error("Video element not found!");
       return;
     }
 
@@ -71,39 +71,75 @@ export default Ember.Mixin.create({
   onVideoBarInput(event) {
     const seekTime = parseFloat(event.target.value);
     const videoElement = this.get('videoElement');
+    const videoBar = document.getElementById('videoBar');
+    const circleLoader = document.getElementById('circleLoader');
+
+    if (!videoElement || !videoBar || !circleLoader) {
+      console.error("Video element, seek bar, or circle loader not found!");
+      return;
+    }
+
+    circleLoader.classList.remove('hidden');
 
     if (this.get('isPlayList')) {
-      const videoList = this.get('videoList');
-      const videoDurations = this.get('videoDurations');
+      const videoList = this.get('videoList') || [];
+      const videoDurations = this.get('videoDurations') || [];
 
-      for (let i = 0, loadedTime = 0; i < videoList.length; i++) {
-        const videoDuration = videoDurations[i];
+      if (!videoList.length || !videoDurations.length) {
+        console.error("Playlist data missing!");
+        circleLoader.classList.add('hidden');
+        return;
+      }
 
-        if (seekTime < loadedTime + videoDuration) {
-          const adjustedTime = seekTime - loadedTime;
+      let accumulatedTime = 0;
+      let targetVideoIndex = 0;
+      let targetTime = 0;
 
-          if (this.get('currentVideoIndex') !== i) {
-            this.set('currentVideoIndex', i);
-            videoElement.src = videoList[i];
-            videoElement.load();
-
-            videoElement.onloadeddata = () => {
-              videoElement.currentTime = adjustedTime;
-              videoElement.play();
-            };
-          } else {
-            videoElement.currentTime = adjustedTime;
-          }
+      for (let i = 0; i < videoDurations.length; i++) {
+        if (seekTime < accumulatedTime + videoDurations[i]) {
+          targetVideoIndex = i;
+          targetTime = seekTime - accumulatedTime;
           break;
         }
+        accumulatedTime += videoDurations[i];
+      }
 
-        loadedTime += videoDuration;
+
+      if (this.get('currentVideoIndex') !== targetVideoIndex) {
+        this.set('currentVideoIndex', targetVideoIndex);
+        videoElement.src = videoList[targetVideoIndex];
+        videoElement.load();
+
+        videoElement.onloadeddata = () => {
+          videoElement.currentTime = targetTime;
+          videoElement.play();
+        };
+      } else {
+        videoElement.currentTime = targetTime;
       }
     } else {
-      if (videoElement) {
+
+      if (!isNaN(seekTime) && seekTime >= 0 && seekTime <= videoElement.duration) {
         videoElement.currentTime = seekTime;
+      } else {
+        console.error("Invalid seek time:", seekTime);
       }
     }
-  },
 
+
+    videoBar.value = seekTime;
+
+    videoElement.addEventListener('canplay', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('playing', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('error', () => {
+      console.error("Error loading video.");
+      circleLoader.classList.add('hidden');
+    });
+  },
 });

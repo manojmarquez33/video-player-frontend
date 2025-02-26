@@ -6,6 +6,7 @@ export default Ember.Mixin.create({
 
     playbackRate: 1.0,
 
+
     togglePlay() {
       const videoElement = this.get('videoElement');
       let playbackRate = parseFloat(this.get('playbackRate'));
@@ -224,7 +225,52 @@ export default Ember.Mixin.create({
         link.click();
         URL.revokeObjectURL(url);
       }, 'image/png');
-    }
+    },
+
+    seekVideo(value) {
+      let videoElement = this.get('videoElement');
+      let videoList = this.get('videoList');
+      let videoDurations = this.get('videoDurations');
+      let currentVideoIndex = this.get('currentVideoIndex');
+
+      if (!videoElement || !videoList.length || !videoDurations.length) {
+        console.error("Video element or playlist data missing.");
+        return;
+      }
+
+      let seekTime = parseFloat(value);
+      if (isNaN(seekTime) || seekTime < 0 || seekTime > this.get('totalDuration')) {
+        console.error("enter valid time:", seekTime);
+        return;
+      }
+
+      let loadedTime = 0;
+      let targetVideoIndex = 0;
+      let targetTime = 0;
+
+      for (let i = 0; i < videoDurations.length; i++) {
+        if (seekTime < loadedTime + videoDurations[i]) {
+          targetVideoIndex = i;
+          targetTime = seekTime - loadedTime;
+          break;
+        }
+        loadedTime += videoDurations[i];
+      }
+
+      if (currentVideoIndex === targetVideoIndex) {
+        videoElement.currentTime = targetTime;
+      } else {
+
+        this.set('currentVideoIndex', targetVideoIndex);
+        videoElement.src = videoList[targetVideoIndex];
+        videoElement.load();
+
+        videoElement.onloadeddata = () => {
+          videoElement.currentTime = targetTime;
+          videoElement.play();
+        };
+      }
+    },
   },
 
   updatePlaybackSpeed(speed) {
@@ -237,6 +283,8 @@ export default Ember.Mixin.create({
       alert('Please enter a valid playback speed.');
     }
   },
+
+
 
 
 });

@@ -9,13 +9,16 @@ export default Ember.Mixin.create({
 
   loadPlaylist() {
     const model = this.get('model');
+    const circleLoader = document.getElementById('circleLoader');
 
     if (!model || !Array.isArray(model.videoList)) {
-      console.error("missing playlist data");
+      console.error("❌ Missing playlist data.");
       return;
     }
 
-    //console.log("check list datas are correct:", model.videoList);
+    if (circleLoader) {
+      circleLoader.classList.remove('hidden');
+    }
 
     const videoUrls = model.videoList.map(video => video.url);
     this.setProperties({
@@ -83,21 +86,47 @@ export default Ember.Mixin.create({
     const videoList = this.get('videoList');
     const videoElement = this.get('videoElement');
 
-    if (!videoElement || currentVideoIndex >= videoList.length - 1) {
-      this.set('currentVideoIndex', 0);
-      videoElement.src = videoList[0];
-      videoElement.load();
+    const circleLoader = document.getElementById('circleLoader');
+
+    if (!videoElement || !circleLoader) {
+      console.error("Video element or loading spinner not found!");
       return;
     }
 
-    this.set('currentVideoIndex', currentVideoIndex + 1);
+
+    circleLoader.classList.remove('hidden');
+
+    if (currentVideoIndex >= videoList.length - 1) {
+      this.set('currentVideoIndex', 0);
+    } else {
+      this.set('currentVideoIndex', currentVideoIndex + 1);
+    }
 
     videoElement.src = videoList[this.get('currentVideoIndex')];
     videoElement.load();
+
+
+    videoElement.addEventListener('canplay', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('playing', () => {
+      circleLoader.classList.add('hidden');
+    });
+
+    videoElement.addEventListener('waiting', () => {
+      circleLoader.classList.remove('hidden');
+    });
+
+    videoElement.addEventListener('error', () => {
+      console.error("Error loading video.");
+      circleLoader.classList.add('hidden');
+    });
 
     videoElement.onloadeddata = () => {
       videoElement.currentTime = 0;
       videoElement.play();
     };
   }
+
 });
