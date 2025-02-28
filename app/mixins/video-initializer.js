@@ -18,6 +18,19 @@ export default Ember.Mixin.create({
       circleLoader.classList.remove('hidden');
     });
 
+    videoElement.addEventListener('loadedmetadata', () => {
+      //this.startBufferUpdateLoop();
+      this.onLoadTotalTime();
+    });
+
+    videoElement.addEventListener('progress', () => {
+      if (!this.bufferUpdateInterval) {
+        this.startBufferUpdateLoop();
+      }
+    });
+
+
+
 
     videoElement.addEventListener('playing', () => {
       circleLoader.classList.add('hidden');
@@ -46,8 +59,8 @@ export default Ember.Mixin.create({
     videoElement.addEventListener('play', () => this.set('isPlaying', true));
 
     if (this.get('isPlayList')) {
-    videoElement.addEventListener('ended', this.playNextVideo.bind(this));
-}
+      videoElement.addEventListener('ended', this.playNextVideo.bind(this));
+    }
     if (videoBar) {
       videoBar.addEventListener('input', this.onVideoBarInput.bind(this));
       videoBar.addEventListener('change', () => this.set('isSeeking', false));

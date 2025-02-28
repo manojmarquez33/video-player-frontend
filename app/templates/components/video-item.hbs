@@ -1,7 +1,7 @@
 <div class="video-item">
   {{#if (equal video.fileExtension "mp4")}}
     {{#link-to "video-details" video.fileName}}
-      <video class="thumbnail" preload="auto" muted autoplay crossorigin="anonymous">
+      <video class="thumbnail" preload="auto" crossorigin="anonymous">
         <source src="{{video.url}}" type="video/mp4">
       </video>
     {{/link-to}}
