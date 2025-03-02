@@ -1,7 +1,7 @@
-
-<h1 class="header">
-  <img src="assets/images/video-player.png" alt="Logo" class="logo"> ZoTube
-</h1>
+<header class="header">
+  <img src="assets/images/video-player.png" alt="Logo" class="logo">
+  <span class="brand-title">ZoTube</span>
+</header>
 
 <div class="search-container">
   {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
@@ -13,6 +13,9 @@
       {{video-item video=video}}
     {{/each}}
   {{else}}
-    <p class="no-results">No results found.</p>
+    <div class="no-results-container">
+      <img src="assets/images/no-results.png" class="no-results-image" alt="No Results">
+      <p class="no-results-text">No results found. Try a different search.</p>
+    </div>
   {{/if}}
 </div>

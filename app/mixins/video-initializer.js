@@ -14,18 +14,23 @@ export default Ember.Mixin.create({
     this.set('videoElement', videoElement);
 
 
+    document.getElementById("subtitleToggle").addEventListener("change", (event) => {
+      this.toggleSubtitle(event);
+    });
+
+
     videoElement.addEventListener('waiting', () => {
       circleLoader.classList.remove('hidden');
     });
 
-    videoElement.addEventListener('loadedmetadata', () => {
-      //this.startBufferUpdateLoop();
-      this.onLoadTotalTime();
-    });
+    // videoElement.addEventListener('loadedmetadata', () => {
+    //   //this.startBufferUpdateLoop();
+    //   this.onLoadTotalTime();
+    // });
 
     videoElement.addEventListener('progress', () => {
       if (!this.bufferUpdateInterval) {
-        this.startBufferUpdateLoop();
+        this.updateBufferedRange();
       }
     });
 
@@ -92,6 +97,23 @@ export default Ember.Mixin.create({
     console.log('Video player initialized sucessfullyyy!!!');
   },
 
+  toggleSubtitle(event) {
+    console.log("Event:", event);
+
+    if (!event || !event.target) {
+      console.error("Event or event.target is undefined");
+      return;
+    }
+
+    const video = document.getElementById("videoPlayer");
+    const track = video.querySelector("track");
+
+    if (track) {
+      track.mode = event.target.value === "on" ? "showing" : "hidden";
+    }
+  },
+
+
   loadSingleVideo() {
     const videoElement = this.get('videoElement');
     const videoModel = this.get('model');
@@ -105,13 +127,33 @@ export default Ember.Mixin.create({
     if (videoModel && videoModel.fileName) {
       const videoFileName = videoModel.fileName;
 
-
       circleLoader.classList.remove('hidden');
 
+      // Set video source dynamically
       videoElement.src = `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(videoFileName)}`;
       videoElement.load();
 
+      // Fetch subtitle file dynamically (Using subtitle= instead of video=)
+      fetch(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?subtitle=${encodeURIComponent(videoFileName)}`)
+        .then(response => {
+          if (response.ok) {
+            // Create and append subtitle track
+            const subtitleTrack = document.createElement("track");
+            subtitleTrack.kind = "subtitles";
+            subtitleTrack.label = "English";
+            subtitleTrack.srclang = "en";
+            subtitleTrack.default = true;
+            subtitleTrack.src = response.url; // Set subtitle URL from response
 
+            videoElement.appendChild(subtitleTrack);
+            console.log("Subtitles loaded:", response.url);
+          } else {
+            console.log("No subtitles found for", videoFileName);
+          }
+        })
+        .catch(error => console.error("Error loading subtitles:", error));
+
+      // Hide loader when video is ready
       videoElement.addEventListener('canplay', () => {
         circleLoader.classList.add('hidden');
       });
@@ -124,6 +166,7 @@ export default Ember.Mixin.create({
         console.error("Error loading video.");
         circleLoader.classList.add('hidden');
       });
+
     } else {
       console.error("Video file name is missing!");
     }

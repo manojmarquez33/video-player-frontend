@@ -7,9 +7,11 @@
     <div class="video-container">
       <div class="video-wrapper">
         <div id="circleLoader" class="loading-spinner hidden"></div>
-        <video id="videoPlayer"></video>
-      </div>
 
+        <video id="videoPlayer" controls>
+          <!-- Subtitle track will be dynamically added in JavaScript -->
+        </video>
+      </div>
 
       <div class="video-controls">
         <div class="video-buttons">
@@ -71,8 +73,19 @@
     <div class="video-details">
       <p><strong>Video Name:</strong> {{model.fileName}}</p>
       <p><strong>Size:</strong> {{model.size}}</p>
-      <p><strong>Duration:</strong> <span id="videoDuration">Loading...</span></p>
+      <p><strong>Duration:</strong> <span id="videoDuration">{{model.videoDuration}}</span></p>
     </div>
+
+    <!-- New Subtitle Controls -->
+    <div class="subtitle-controls">
+      <label for="subtitleToggle">Subtitles:</label>
+      <select id="subtitleToggle">
+          <option value="on">On</option>
+          <option value="off" selected>Off</option>
+      </select>
+
+    </div>
+
   </div>
 
   <div class="right-section">
@@ -84,7 +97,11 @@
       </div>
       <div class="group">
         <button {{action "downloadFrame"}}>Download Frame</button>
-        <button {{action "convertBlackAndWhite"}}>🖤 Black & White</button>
+        <button {{action "convertBlackAndWhite"}}>Black & White</button>
+      </div>
+      <div class="group">
+        <button {{action "downloadMP3"}}>Download MP3</button>
+        <button {{action "toggleSubtitle"}}>Subtitle</button>
       </div>
     </div>
   </div>
