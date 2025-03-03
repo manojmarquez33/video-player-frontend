@@ -12,36 +12,36 @@ export default Ember.Mixin.create({
     }
 
     videoElement.crossOrigin = 'anonymous';
-    this.set('videoElement', videoElement);
+        this.set('videoElement', videoElement);
 
-    if (!this.get('isPlayList')){
-      document.getElementById("subtitleToggle").addEventListener("change", (event) => {
-        this.toggleSubtitle(event);
-      });
-  }
+        if (!this.get('isPlayList')){
+          document.getElementById("subtitleToggle").addEventListener("change", (event) => {
+            this.toggleSubtitle(event);
+          });
+      }
 
-    videoElement.addEventListener('waiting', () => circleLoader.classList.remove('hidden'));
-    videoElement.addEventListener('playing', () => circleLoader.classList.add('hidden'));
-    videoElement.addEventListener('canplay', () => circleLoader.classList.add('hidden'));
-    videoElement.addEventListener('stalled', () => circleLoader.classList.remove('hidden'));
-    videoElement.addEventListener('error', () => circleLoader.classList.add('hidden'));
+        videoElement.addEventListener('waiting', () => circleLoader.classList.remove('hidden'));
+        videoElement.addEventListener('playing', () => circleLoader.classList.add('hidden'));
+        videoElement.addEventListener('canplay', () => circleLoader.classList.add('hidden'));
+        videoElement.addEventListener('stalled', () => circleLoader.classList.remove('hidden'));
+        videoElement.addEventListener('error', () => circleLoader.classList.add('hidden'));
 
-    const videoBar = document.getElementById('videoBar');
-    const volumeBar = document.getElementById('volumeBar');
+        const videoBar = document.getElementById('videoBar');
+        const volumeBar = document.getElementById('volumeBar');
 
-    videoElement.addEventListener('loadedmetadata', this.onLoadTotalTime.bind(this));
-    videoElement.addEventListener('timeupdate', this.onTimeUpdate.bind(this));
-    videoElement.addEventListener('pause', () => this.set('isPlaying', false));
-    videoElement.addEventListener('play', () => this.set('isPlaying', true));
+        videoElement.addEventListener('loadedmetadata', this.onLoadTotalTime.bind(this));
+        videoElement.addEventListener('timeupdate', this.onTimeUpdate.bind(this));
+        videoElement.addEventListener('pause', () => this.set('isPlaying', false));
+        videoElement.addEventListener('play', () => this.set('isPlaying', true));
 
-    if (this.get('isPlayList')) {
-      videoElement.addEventListener('ended', this.playNextVideo.bind(this));
-    }
-    if (videoBar) {
-      videoBar.addEventListener('input', this.onVideoBarInput.bind(this));
-      videoBar.addEventListener('change', () => this.set('isSeeking', false));
-      videoBar.addEventListener('mousedown', () => this.set('isSeeking', true));
-      videoBar.addEventListener('mouseup', () => this.set('isSeeking', false));
+        if (this.get('isPlayList')) {
+          videoElement.addEventListener('ended', this.playNextVideo.bind(this));
+        }
+        if (videoBar) {
+          videoBar.addEventListener('input', this.onVideoBarInput.bind(this));
+          videoBar.addEventListener('change', () => this.set('isSeeking', false));
+          videoBar.addEventListener('mousedown', () => this.set('isSeeking', true));
+          videoBar.addEventListener('mouseup', () => this.set('isSeeking', false));
     } else {
       console.error("Video bar not found!");
     }

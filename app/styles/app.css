@@ -7,6 +7,37 @@ h1 {
   text-align: center;
   color: #333;
 }
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.no-results-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+  text-align: center;
+  height: 50vh; /* Adjust height to center in the viewport */
+  width: 100%;
+}
+
+.no-results-image {
+  display: block;
+  margin: 0 auto; /* Ensure image is centered */
+}
+
+.no-results-text {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+  margin-top: 10px;
+}
+
+
 .search-container {
   text-align: center;
   margin-bottom: 20px;
@@ -86,9 +117,3 @@ h1 {
   margin-right: 10px;
 }
 
-.no-results {
-  text-align: center;
-  font-size: 18px;
-  color: #888;
-  margin-top: 20px;
-}

@@ -15,7 +15,7 @@ export default Ember.Component.extend({
 
     videoElement.addEventListener("loadedmetadata", () => {
       Ember.run.scheduleOnce("afterRender", this, function () {
-        console.log("duration:", videoElement.duration);
+        //console.log("duration:", videoElement.duration);
 
         Ember.run.next(this, function () {
           let videoDuration = this.element ? this.element.querySelector(".duration-overlay") : null;
