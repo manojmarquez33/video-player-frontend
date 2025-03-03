@@ -7,20 +7,6 @@ export default Ember.Mixin.create({
     playbackRate: 1.0,
 
 
-    toggleSubtitle(event) {
-      console.log("Event:", event);
-      if (!event || !event.target) {
-        console.error("Event or event.target is undefined");
-        return;
-      }
-      const video = document.getElementById("videoPlayer");
-      const track = video.querySelector("track");
-
-      if (track) {
-        track.mode = event.target.value === "on" ? "showing" : "hidden";
-      }
-    },
-
     togglePlay() {
       const videoElement = this.get('videoElement');
       let playbackRate = parseFloat(this.get('playbackRate'));

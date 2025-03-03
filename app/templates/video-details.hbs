@@ -76,15 +76,15 @@
       <p><strong>Duration:</strong> <span id="videoDuration">{{model.videoDuration}}</span></p>
     </div>
 
-    <!-- New Subtitle Controls -->
-    <div class="subtitle-controls">
-      <label for="subtitleToggle">Subtitles:</label>
-      <select id="subtitleToggle">
-          <option value="on">On</option>
-          <option value="off" selected>Off</option>
-      </select>
 
-    </div>
+{{!--     <div class="subtitle-controls"> --}}
+{{!--       <label for="subtitleToggle">Subtitles:</label> --}}
+{{!--       <select id="subtitleToggle"> --}}
+{{!--           <option value="on">On</option> --}}
+{{!--           <option value="off" selected>Off</option> --}}
+{{!--       </select> --}}
+
+{{!--     </div> --}}
 
   </div>
 
@@ -99,10 +99,14 @@
         <button {{action "downloadFrame"}}>Download Frame</button>
         <button {{action "convertBlackAndWhite"}}>Black & White</button>
       </div>
-      <div class="group">
-        <button {{action "downloadMP3"}}>Download MP3</button>
-        <button {{action "toggleSubtitle"}}>Subtitle</button>
-      </div>
+     <div class="subtitle-controls">
+          <label for="subtitleToggle">Subtitle  :</label>
+          <select id="subtitleToggle">
+              <option value="on">On</option>
+              <option value="off" selected>Off</option>
+          </select>
+
+        </div>
     </div>
   </div>
 </div>

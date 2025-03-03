@@ -77,34 +77,33 @@ export default Ember.Mixin.create({
       return;
     }
 
-    let bufferedEnd = 0;
-
+    let bufferEnd = 0;
 
     for (let i = 0; i < videoElement.buffered.length; i++) {
       if (videoElement.buffered.start(i) <= seekTime) {
-        bufferedEnd = videoElement.buffered.end(i);
+        bufferEnd = videoElement.buffered.end(i);
       }
     }
 
     videoElement.currentTime = seekTime;
     videoBar.value = seekTime;
 
-    console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferedEnd}sec`);
+    console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferEnd}sec`);
 
-
-    if (seekTime <= bufferedEnd) {
+    if (seekTime <= bufferEnd) {
       circleLoader.classList.add('hidden');
       videoElement.play();
     } else {
-      console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferedEnd}sec`);
-      console.log(`seekTime >= bufferedEnd (${bufferedEnd}sec)..so...I am wait for buffer to load`);
+      console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferEnd}sec`);
+      console.log(`seekTime ${seekTime}()>= bufferEnd (${bufferEnd}sec)..so...I am wait for buffer to load`);
+
       circleLoader.classList.remove('hidden');
-      this.set('isSeekingBeyondBuffer', true);
+
+      this.set('isSeekMoreBuff', true);
       this.set('seekTargetTime', seekTime);
 
     }
   },
-
 
   updateBufferedRange() {
     const videoElement = this.get('videoElement');
@@ -117,35 +116,33 @@ export default Ember.Mixin.create({
 
     const currentTime = videoElement.currentTime;
     const duration = videoElement.duration;
-    let bufferedEnd = 0;
+
+    let bufferEnd = 0;
 
     for (let i = 0; i < videoElement.buffered.length; i++) {
       if (videoElement.buffered.start(i) <= currentTime) {
-        bufferedEnd = videoElement.buffered.end(i);
+        bufferEnd = videoElement.buffered.end(i);
       }
     }
 
     const playedPercent = (currentTime / duration) * 100;
-    const bufferedPercent = (bufferedEnd / duration) * 100;
-
+    const bufferedPercent = (bufferEnd / duration) * 100;
 
     videoBar.style.background = `linear-gradient(
     to right,
-    #007FFF ${playedPercent}%,    /* Blue for played portion */
-    #B0C4DE ${playedPercent}% ${bufferedPercent}%, /* Pink for buffered */
-    #fff ${bufferedPercent}%   /* White for unbuffered */
+    #007FFF ${playedPercent}%,
+    #B0C4DE ${playedPercent}% ${bufferedPercent}%,
+    #fff ${bufferedPercent}%
   )`;
 
-    // Save last buffered value for logic handling
-    if (!this.lastBufferedEnd || bufferedEnd > this.lastBufferedEnd) {
-      this.lastBufferedEnd = bufferedEnd;
+    if (!this.lastbufferEnd || bufferEnd > this.lastbufferEnd) {
+      this.lastbufferEnd = bufferEnd;
     }
 
-    // Handle seeking beyond the buffer
-    if (this.get('isSeekingBeyondBuffer')) {
-      if (this.get('seekTargetTime') <= bufferedEnd) {
+    if (this.get('isSeekMoreBuff')) {
+      if (this.get('seekTargetTime') <= bufferEnd) {
         console.log(`Buffer reached seek target: ${this.get('seekTargetTime')}s, resuming video.`);
-        this.set('isSeekingBeyondBuffer', false);
+        this.set('isSeekMoreBuff', false);
         circleLoader.classList.add('hidden');
         videoElement.play();
       }

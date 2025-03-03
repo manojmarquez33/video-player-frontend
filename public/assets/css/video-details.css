@@ -152,20 +152,6 @@ h1 {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Video Buttons Styling */
 .video-buttons {
   display: flex;
@@ -361,4 +347,29 @@ h1 {
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+/* Hide native video controls */
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+video {
+  width: 100%;
+  height: auto;
+  outline: none; /* Removes focus outline */
+}
+
+/* Optional: Prevent right-click (disables default video menu) */
+video {
+  pointer-events: none;
+}
+
 

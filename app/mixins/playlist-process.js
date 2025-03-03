@@ -12,7 +12,7 @@ export default Ember.Mixin.create({
     const circleLoader = document.getElementById('circleLoader');
 
     if (!model || !Array.isArray(model.videoList)) {
-      console.error("❌ Missing playlist data.");
+      console.error(" Missing playlist data.");
       return;
     }
 
