@@ -15,6 +15,25 @@ h1 {
   margin-bottom: 20px;
 }
 
+.tab-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.tab-buttons button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: none;
+  background-color: #ccc;
+  cursor: pointer;
+}
+
+.tab-buttons .active-tab {
+  background-color: #007BFF;
+  color: white;
+}
+
 .no-results-container {
   display: flex;
   flex-direction: column;

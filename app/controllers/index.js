@@ -1,55 +1,79 @@
-
 import Ember from 'ember';
 import $ from 'jquery';
 
 export default Ember.Controller.extend({
   searchQuery: '',
+  isVideoTab: true,
+  isPlaylistTab: false,
 
   actions: {
+    showVideos() {
+      this.set('isVideoTab', true);
+      this.set('isPlaylistTab', false);
+      this.send('fetchAllVideos');
+    },
+
+    showPlaylists() {
+      this.set('isVideoTab', false);
+      this.set('isPlaylistTab', true);
+      this.send('fetchAllPlaylists');
+    },
+
     searchVideos() {
       let query = this.get('searchQuery').trim();
-
-      // if (!query) {
-      //   this.set('model', this.store.findAll('video'));
-      //   return;
-      // }
-      //
-
       if (!query) {
-        console.log("no search so, fetching all videos...");
-        this.send('fetchAllVideos');
+        this.get('isVideoTab') ? this.send('fetchAllVideos') : this.send('fetchAllPlaylists');
         return;
       }
 
+      let apiUrl = this.get('isVideoTab')
+        ? `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?search=${encodeURIComponent(query)}`
+        : `http://localhost:8080/VideoPlayer_war_exploded/PlaylistServlet?search=${encodeURIComponent(query)}`;
 
       $.ajax({
-        url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?search=${encodeURIComponent(query)}`,
+        url: apiUrl,
         type: 'GET',
         dataType: 'json',
         success: (data) => {
-          //console.log("Search results:", data);
-          this.set('model', data);
+          if (this.get('isVideoTab')) {
+            this.set('model.videos', data);
+          } else {
+            this.set('model.playlists', data);
+          }
         },
         error: (err) => {
-          console.error("Search request fail", err);
-          this.set('model', []);
+          console.error("Search request failed", err);
+          this.get('isVideoTab') ? this.set('model.videos', []) : this.set('model.playlists', []);
         }
       });
     },
 
     fetchAllVideos() {
-      //console.log("all videos...");
       $.ajax({
         url: "http://localhost:8080/VideoPlayer_war_exploded/VideoServlet",
         type: "GET",
         dataType: "json",
         success: (data) => {
-          //console.log("All videos loaded:", data);
-          this.set("model", data);
+          this.set("model.videos", data);
         },
         error: (err) => {
-          console.error("Fail to fetch videos", err);
-          this.set("model", []);
+          console.error("Failed to fetch videos", err);
+          this.set("model.videos", []);
+        }
+      });
+    },
+
+    fetchAllPlaylists() {
+      $.ajax({
+        url: "http://localhost:8080/VideoPlayer_war_exploded/PlaylistServlet",
+        type: "GET",
+        dataType: "json",
+        success: (data) => {
+          this.set("model.playlists", data);
+        },
+        error: (err) => {
+          console.error("Failed to fetch playlists", err);
+          this.set("model.playlists", []);
         }
       });
     }
