@@ -372,4 +372,58 @@ video {
   pointer-events: none;
 }
 
+/* Default button style */
+.like-dislike-btn {
+  background-color: #007bff; /* Default Blue */
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease-in-out, transform 0.2s, box-shadow 0.3s;
+  margin: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Like button when enabled */
+.like-btn.liked {
+  background-color: #28a745 !important; /* Green */
+  box-shadow: 0px 0px 10px rgba(40, 167, 69, 0.8);
+}
+
+/* Dislike button when enabled */
+.dislike-btn.disliked {
+  background-color: #dc3545 !important; /* Red */
+  box-shadow: 0px 0px 10px rgba(220, 53, 69, 0.8);
+}
+
+/* Hover Effects */
+.like-dislike-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0px 0px 12px rgba(0, 123, 255, 0.8);
+}
+
+/* Like and Dislike Button Animations */
+.like-btn.liked::after,
+.dislike-btn.disliked::after {
+  content: " ✔"; /* Checkmark to indicate selected state */
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+/* Smooth bounce animation on click */
+.like-btn.liked:active,
+.dislike-btn.disliked:active {
+  animation: bounce 0.3s ease-in-out;
+}
+
+@keyframes bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
 

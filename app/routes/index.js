@@ -1,11 +1,8 @@
 import Ember from 'ember';
+import $ from 'jquery';
 
 export default Ember.Route.extend({
   model() {
-    return Ember.RSVP.hash({
-      playlists: Ember.$.getJSON('http://localhost:8080/VideoPlayer_war_exploded/PlaylistServlet'),
-      videos: Ember.$.getJSON('http://localhost:8080/VideoPlayer_war_exploded/VideoServlet')
-
-    });
+    return $.getJSON('http://localhost:8080/VideoPlayer_war_exploded/VideoServlet');
   }
 });

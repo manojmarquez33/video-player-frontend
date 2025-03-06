@@ -6,6 +6,58 @@ export default Ember.Mixin.create({
 
     playbackRate: 1.0,
 
+    likeVideo() {
+      if (this.get('isLiked')) {
+        this.send('updateLikeStatus', 0);
+      } else {
+        this.send('updateLikeStatus', 1);
+      }
+    },
+
+    dislikeVideo() {
+      if (this.get('isDisliked')) {
+        this.send('updateLikeStatus', 0);
+      } else {
+        this.send('updateLikeStatus', -1);
+      }
+    },
+
+    updateLikeStatus(status) {
+      let fileName;
+
+      if (this.get('isPlayList')) {
+        fileName = this.get('model.playlistName');
+      } else {
+        fileName = this.get('model.fileName');
+      }
+
+      console.log(" Updating like status for:", fileName, "Status:", status);
+
+      Ember.$.ajax({
+        url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet`,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ video: fileName, likeStatus: status }),
+        success: () => {
+          if (status === 1) {
+            this.set('isLiked', true);
+            this.set('isDisliked', false);
+            console.log(" Like status response:", 1);
+          } else if (status === -1) {
+            this.set('isLiked', false);
+            this.set('isDisliked', true);
+            console.log("Like status response:", -1);
+          }else {
+            this.set('isLiked', false);
+            this.set('isDisliked', false);
+            console.log(" Reset like status to default.");
+          }
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.error("Error updating like status:", errorThrown);
+        }
+      });
+    },
 
     togglePlay() {
       const videoElement = this.get('videoElement');
@@ -283,8 +335,6 @@ export default Ember.Mixin.create({
       alert('Please enter a valid playback speed.');
     }
   },
-
-
 
 
 });

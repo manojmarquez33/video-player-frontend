@@ -14,17 +14,18 @@ export default Ember.Component.extend({
     videoElement.load();
 
     videoElement.addEventListener("loadedmetadata", () => {
-      Ember.run.scheduleOnce("afterRender", this, function () {
-        //console.log("duration:", videoElement.duration);
-
-        Ember.run.next(this, function () {
-          let videoDuration = this.element ? this.element.querySelector(".duration-overlay") : null;
-          if (videoDuration) {
-            videoDuration.textContent = formatDuration(videoElement.duration);
-          }
-        });
+      Ember.run.next(this, function () {
+        let videoDuration = this.element ? this.element.querySelector(".duration-overlay") : null;
+        if (videoDuration) {
+          videoDuration.textContent = formatDuration(videoElement.duration);
+        }
       });
     });
+
+
+    if (videoElement.readyState >= 1) {
+      videoElement.dispatchEvent(new Event("loadedmetadata"));
+    }
   }
 });
 

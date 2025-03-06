@@ -1,31 +1,21 @@
-<header class="header">
-  <img src="assets/images/video-player.png" alt="Logo" class="logo">
-  <span class="brand-title">ZoTube</span>
-</header>
+  <header class="header">
+    <img src="assets/images/video-player.png" alt="Logo" class="logo">
+    <span class="brand-title">ZoTube</span>
+  </header>
 
-<div class="search-container">
-  {{input type="text" value=searchQuery placeholder="Search for videos or playlists..." class="search-bar" key-up=(action "searchContent")}}
-</div>
+  <div class="search-container">
+    {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
+  </div>
 
-<div class="video-container">
-  {{#if model.videos.length}}
-    {{#each model.videos as |video|}}
-      {{video-item video=video}}
-    {{/each}}
-  {{/if}}
-
-  {{#if model.playlists.length}}
-    {{#each model.playlists as |playlist|}}
-      {{playlist-item playlist=playlist}}
-    {{/each}}
-  {{/if}}
-
-{{#if (equal model.videos.length 0)}}
-  {{#if (equal model.playlists.length 0)}}
-    <div class="no-results-container">
-      <img src="assets/images/no-result.png" width='150' height='150' class="no-results-image" alt="No Results">
-      <p class="no-results-text">No results found.😑</p>
-    </div>
-  {{/if}}
-{{/if}}
-</div>
+  <div class="video-container">
+    {{#if model.length}}
+      {{#each model as |video|}}
+        {{video-item video=video}}
+      {{/each}}
+    {{else}}
+      <div class="no-results-container">
+        <img src="assets/images/no-result.png" width='150' height='150' class="no-results-image" alt="No Results">
+        <p class="no-results-text">No results found. 😑</p>
+      </div>
+    {{/if}}
+  </div>
