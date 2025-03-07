@@ -1,4 +1,4 @@
-// video-details.js
+
 import Ember from 'ember';
 import VideoInitializer from '../mixins/video-initializer';
 import VideoController from '../mixins/video-controller';
@@ -28,15 +28,13 @@ export default Ember.Controller.extend(
       this._super(...arguments);
       Ember.run.scheduleOnce('afterRender', this, function () {
         this.setupVideoPlayer();
-        // Remove any conflicting inline action from the template
         Ember.$('.comments-section').on('click', '.timestamp', (event) => {
-          // Use Ember's action system to dispatch the click
           this.send('handleTimeClick', event);
         });
       });
     },
 
-    modelObserver: Ember.observer('model', function() {
+    modelObserver: Ember.observer('model', function () {
       let fileName = this.get('model.fileName');
 
       if (!fileName || fileName.trim() === "null") {
@@ -104,12 +102,9 @@ export default Ember.Controller.extend(
 
       handleTimeClick(event) {
         let clickedElement = event && event.target;
-
         if (clickedElement && clickedElement.classList.contains("timestamp")) {
-
           let timestampText = clickedElement.dataset.time;
           let timeParts = timestampText.split(":").map(Number);
-
           let seconds;
 
           if (timeParts.length === 3) {
@@ -117,7 +112,6 @@ export default Ember.Controller.extend(
           } else {
             seconds = timeParts[0] * 60 + timeParts[1];
           }
-
           let videoElement = document.getElementById("videoPlayer");
           if (videoElement) {
             videoElement.currentTime = seconds;
@@ -135,15 +129,15 @@ export default Ember.Controller.extend(
           return;
         }
 
-        $.ajax({
+        Ember.$.ajax({
           url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
           type: "POST",
           contentType: "application/json",
-          data: JSON.stringify({ mediaId: videoId, comment: commentText }),
+          data: JSON.stringify({mediaId: videoId, comment: commentText}),
           success: () => {
             this.set('commentStatusMessage', 'Comment posted successfully!');
             $("#commentText").val('');
-            Ember.run.later(this, function() {
+            Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
             }, 3000);
           },
@@ -154,9 +148,8 @@ export default Ember.Controller.extend(
               error: errorThrown,
               response: jqXHR.responseText
             });
-
             this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
-            Ember.run.later(this, function() {
+            Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
             }, 3000);
           }
@@ -165,7 +158,6 @@ export default Ember.Controller.extend(
 
       viewComments() {
         let videoId = this.get('model.id');
-
         Ember.$.ajax({
           url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(videoId)}`,
           type: "GET",
@@ -174,6 +166,7 @@ export default Ember.Controller.extend(
             console.log("Fetched comments:", data);
             let processedComments = data.map(comment => {
               return {
+                commentId: comment.commentId,  // Ensure commentId is set from the server
                 commentText: this.detectTime(comment.commentText),
                 relativeTime: this.formatRelativeTime(comment.createdAt)
               };
@@ -185,6 +178,68 @@ export default Ember.Controller.extend(
             this.set('comments', []);
           }
         });
+      },
+
+
+      editComment(comment) {
+
+        let updatedText = prompt("Edit your comment:", comment.commentText);
+
+        if (!updatedText || updatedText.trim() === "" || updatedText.trim() === comment.commentText) {
+          return;
+        }
+        Ember.$.ajax({
+          url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
+          type: "PUT",
+          contentType: "application/json",
+          data: JSON.stringify({
+            commentId: comment.commentId,
+            comment: updatedText.trim()
+          }),
+          success: () => {
+            alert("Comment updated successfully!");
+
+            this.send("viewComments");
+          },
+          error: (jqXHR, _textStatus, _errorThrown) => {
+            console.error("Failed to post comment", {
+              status: jqXHR.status,
+              textStatus: _textStatus,
+              error: _errorThrown,
+              response: jqXHR.responseText
+            });
+            this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
+            Ember.run.later(this, function() {
+              this.set('commentStatusMessage', null);
+            }, 3000);
+          }
+
+        });
+      },
+
+
+      deleteComment(comment) {
+        if (confirm("Are you sure you want to delete this comment?")) {
+          Ember.$.ajax({
+            url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?commentId=" + comment.commentId,
+            type: "DELETE",
+            success: () => {
+              alert("Comment deleted successfully!");
+              this.send("viewComments");
+            },
+            error: (jqXHR) => {
+              console.error("Failed to post comment", {
+                status: jqXHR.status,
+                response: jqXHR.responseText
+              });
+              this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
+              Ember.run.later(this, function() {
+                this.set('commentStatusMessage', null);
+              }, 3000);
+            }
+
+          });
+        }
       }
     }
   }

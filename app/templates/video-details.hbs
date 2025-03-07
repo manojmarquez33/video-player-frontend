@@ -115,14 +115,26 @@
   <button {{action "postComment"}}>Post Comment</button>
   <button {{action "viewComments"}}>View Comments</button>
 
-  <div class="comments-section" onclick={{action "handleTimeClick"}}>
-    {{#each comments as |comment|}}
-      <div class="comment-item">
-        <p>{{{comment.commentText}}}</p>
-        <small class="comment-time">Comment posted {{comment.relativeTime}}</small>
-      </div>
-    {{/each}}
-  </div>
+{{!--   <div class="comments-section" onclick={{action "handleTimeClick"}}> --}}
+{{!--     {{#each comments as |comment|}} --}}
+{{!--       <div class="comment-item"> --}}
+{{!--         <p>{{{comment.commentText}}}</p> --}}
+{{!--         <small class="comment-time">Comment posted {{comment.relativeTime}}</small> --}}
+{{!--       </div> --}}
+{{!--     {{/each}} --}}
+{{!--   </div> --}}
+
+<div class="comments-section">
+  {{#each comments as |comment|}}
+    <div class="comment-item">
+      <p>{{{comment.commentText}}}</p>
+      <small class="comment-time">  {{comment.relativeTime}}</small>
+      <button {{action "editComment" comment}}>Edit</button>
+      <button {{action "deleteComment" comment}}>Delete</button>
+    </div>
+  {{/each}}
+</div>
+
 
 </div>
 
