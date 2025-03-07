@@ -6,6 +6,8 @@ export default Ember.Mixin.create({
 
     playbackRate: 1.0,
 
+
+
     likeVideo() {
       if (this.get('isLiked')) {
         this.send('updateLikeStatus', 0);
@@ -335,6 +337,7 @@ export default Ember.Mixin.create({
       alert('Please enter a valid playback speed.');
     }
   },
+
 
 
 });

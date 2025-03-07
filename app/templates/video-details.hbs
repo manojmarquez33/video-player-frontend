@@ -71,18 +71,10 @@
     <div class="video-details">
       <p><strong>Video Name:</strong> {{model.fileName}}</p>
       <p><strong>Size:</strong> {{model.size}}</p>
-      <p><strong>Duration:</strong> <span id="videoDuration">{{model.videoDuration}}</span></p>
+     <p><strong>Duration:</strong> <span id="videoDuration"></span></p>
+
     </div>
 
-
-{{!--     <div class="subtitle-controls"> --}}
-{{!--       <label for="subtitleToggle">Subtitles:</label> --}}
-{{!--       <select id="subtitleToggle"> --}}
-{{!--           <option value="on">On</option> --}}
-{{!--           <option value="off" selected>Off</option> --}}
-{{!--       </select> --}}
-
-{{!--     </div> --}}
 
   </div>
 
@@ -110,22 +102,30 @@
         </div>
       </div>
 
-      <!-- Comment Section -->
-      <div class="comment-section">
-          <h3>Comments</h3>
-          <textarea {{bind-attr value=newComment}} class="comment-input" placeholder="Add a comment..."></textarea>
-          <button {{action "postComment"}} class="comment-btn">Post Comment</button>
-          <button {{action "fetchComments"}} class="view-comments-btn">View Comments</button>
 
-          <ul class="comments-list">
-              {{#each comments as |comment|}}
-                  <li class="comment-item">
-                      <p>{{comment.text}}</p>
-                      <span class="comment-date">{{comment.date}}</span>
-                  </li>
-              {{/each}}
-          </ul>
+<div class="comment-section">
+  <h3>Comments</h3>
+
+  {{#if commentStatusMessage}}
+    <div class="comment-status">{{commentStatusMessage}}</div>
+  {{/if}}
+
+  <textarea id="commentText" value={{newComment}} placeholder="Add a comment..."
+            oninput={{action (mut newComment) value="target.value"}}></textarea>
+  <button {{action "postComment"}}>Post Comment</button>
+  <button {{action "viewComments"}}>View Comments</button>
+
+  <div class="comments-section" onclick={{action "handleTimeClick"}}>
+    {{#each comments as |comment|}}
+      <div class="comment-item">
+        <p>{{{comment.commentText}}}</p>
+        <small class="comment-time">Comment posted {{comment.relativeTime}}</small>
       </div>
+    {{/each}}
+  </div>
+
+</div>
+
   </div>
 
 

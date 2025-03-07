@@ -19,6 +19,7 @@ export default Ember.Component.extend({
         if (videoDuration) {
           videoDuration.textContent = formatDuration(videoElement.duration);
         }
+
       });
     });
 

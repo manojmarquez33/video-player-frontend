@@ -1,3 +1,4 @@
+// video-playlist.js
 import Ember from 'ember';
 import VideoInitializer from '../mixins/video-initializer';
 import VideoController from '../mixins/video-controller';
@@ -5,6 +6,7 @@ import VideoProcess from '../mixins/video-process';
 import ZoomDrag from '../mixins/zoom-drag';
 import VideoUtils from '../mixins/video-utils';
 import PlaylistProcess from "../mixins/playlist-process";
+import $ from 'jquery';
 
 export default Ember.Controller.extend(
   VideoInitializer,
@@ -30,6 +32,7 @@ export default Ember.Controller.extend(
     isDisliked: false,
     newComment: "",
     comments: [],
+    commentStatusMessage: null,
 
     init() {
       this._super(...arguments);
@@ -47,13 +50,12 @@ export default Ember.Controller.extend(
       }
 
       this.fetchLikeStatus(playlistName);
-      this.fetchComments(playlistName); // Fetch comments when model changes
     }),
 
     fetchLikeStatus(playlistName) {
       console.log("Fetching like status for playlist:", playlistName);
 
-      Ember.$.getJSON(`http://localhost:8080/VideoServlet?video=${encodeURIComponent(playlistName)}&likeStatus=1`)
+      Ember.$.getJSON(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(playlistName)}&likeStatus=1`)
         .then(response => {
           console.log("Like status response:", response);
           if (response.likeStatus === 1) {
@@ -72,45 +74,69 @@ export default Ember.Controller.extend(
         });
     },
 
-    fetchComments(playlistName) {
-      if (!playlistName || playlistName.trim() === "null") {
-        console.warn("Skipping comment fetch: Invalid playlist name.");
+    fetchComments() {
+      let playlistId = this.get('model.id');
+
+      if (!playlistId) {
+        console.warn("Skipping comment fetch: Invalid playlist ID.");
         return;
       }
 
       Ember.$.ajax({
-        url: `http://localhost:8080/VideoServlet?video=${encodeURIComponent(playlistName)}&getComments=true`,
+        url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(playlistId)}&getComments=true`,
         type: "GET",
         success: (response) => {
           this.set("comments", response);
         },
-        error: () => console.error("❌ Failed to fetch comments"),
+        error: () => console.error("Failed to fetch comments"),
       });
     },
 
     actions: {
       postComment() {
-        let commentText = this.get("newComment");
-        let playlistName = this.get("model.playlistName");
+        let playlistId = this.get('model.id'); // Use ID
+        let commentText = $("#commentText").val().trim();
 
-        if (!commentText.trim()) {
+        if (!commentText) {
           alert("Comment cannot be empty!");
           return;
         }
 
-        Ember.$.ajax({
-          url: "http://localhost:8080/VideoServlet",
+        $.ajax({
+          url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
           type: "POST",
           contentType: "application/json",
-          data: JSON.stringify({ video: playlistName, comment_text: commentText, addComment: true }),
+          data: JSON.stringify({ mediaId: playlistId, comment: commentText }),
           success: () => {
-            alert("✅ Comment added successfully!");
-            this.set("newComment", ""); // Clear input field
-            this.fetchComments(playlistName); // Refresh comments list
+            this.set('commentStatusMessage', 'Comment posted successfully!');
+            $("#commentText").val('');
+            Ember.run.later(this, function() {
+              this.set('commentStatusMessage', null);
+            }, 3000);
           },
-          error: () => alert("❌ Failed to add comment."),
+          error: (err) => {
+            console.error("Failed to post comment", err);
+          }
+        });
+      },
+
+      viewComments() {
+        let playlistId = this.get('model.id'); // Use ID
+
+        $.ajax({
+          url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(playlistId)}`,
+          type: "GET",
+          dataType: "json",
+          success: (data) => {
+            this.set('comments', data);
+          },
+          error: (err) => {
+            console.error("Failed to fetch comments", err);
+            this.set('comments', []);
+          }
         });
       }
-    }
+    },
+
   }
 );
