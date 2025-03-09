@@ -1,4 +1,4 @@
-
+import AppConfig from "../config/app-config";
 import Ember from 'ember';
 import VideoInitializer from '../mixins/video-initializer';
 import VideoController from '../mixins/video-controller';
@@ -28,6 +28,7 @@ export default Ember.Controller.extend(
       this._super(...arguments);
       Ember.run.scheduleOnce('afterRender', this, function () {
         this.setupVideoPlayer();
+        this.setupVideoDuration();
         Ember.$('.comments-section').on('click', '.timestamp', (event) => {
           this.send('handleTimeClick', event);
         });
@@ -51,7 +52,7 @@ export default Ember.Controller.extend(
 
       console.log("Fetching like status for:", fileName);
 
-      Ember.$.getJSON(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(fileName)}&likeStatus=1`)
+      Ember.$.getJSON(`${AppConfig.VideoServlet_API_URL}?video=${encodeURIComponent(fileName)}&likeStatus=1`)
         .then(response => {
           console.log("Like status response:", response);
           if (response.likeStatus === 1) {
@@ -130,7 +131,7 @@ export default Ember.Controller.extend(
         }
 
         Ember.$.ajax({
-          url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
+          url: AppConfig.CommentServlet_API_URL,
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify({mediaId: videoId, comment: commentText}),
@@ -159,7 +160,7 @@ export default Ember.Controller.extend(
       viewComments() {
         let videoId = this.get('model.id');
         Ember.$.ajax({
-          url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(videoId)}`,
+          url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(videoId)}`,
           type: "GET",
           dataType: "json",
           success: (data) => {
@@ -189,7 +190,7 @@ export default Ember.Controller.extend(
           return;
         }
         Ember.$.ajax({
-          url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
+          url: AppConfig.CommentServlet_API_URL,
           type: "PUT",
           contentType: "application/json",
           data: JSON.stringify({
@@ -221,7 +222,7 @@ export default Ember.Controller.extend(
       deleteComment(comment) {
         if (confirm("Are you sure you want to delete this comment?")) {
           Ember.$.ajax({
-            url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?commentId=" + comment.commentId,
+            url: `${AppConfig.CommentServlet_API_URL}?commentId=${comment.commentId}`,
             type: "DELETE",
             success: () => {
               alert("Comment deleted successfully!");

@@ -6,6 +6,7 @@ import VideoProcess from '../mixins/video-process';
 import ZoomDrag from '../mixins/zoom-drag';
 import VideoUtils from '../mixins/video-utils';
 import PlaylistProcess from "../mixins/playlist-process";
+import AppConfig from "../config/app-config";
 import $ from 'jquery';
 
 export default Ember.Controller.extend(
@@ -55,7 +56,7 @@ export default Ember.Controller.extend(
     fetchLikeStatus(playlistName) {
       console.log("Fetching like status for playlist:", playlistName);
 
-      Ember.$.getJSON(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(playlistName)}&likeStatus=1`)
+      Ember.$.getJSON(`${AppConfig.VideoServlet_API_URL}?video=${encodeURIComponent(playlistName)}&likeStatus=1`)
         .then(response => {
           console.log("Like status response:", response);
           if (response.likeStatus === 1) {
@@ -83,7 +84,7 @@ export default Ember.Controller.extend(
       }
 
       Ember.$.ajax({
-        url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(playlistId)}&getComments=true`,
+        url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(playlistId)}&getComments=true`,
         type: "GET",
         success: (response) => {
           this.set("comments", response);
@@ -103,7 +104,7 @@ export default Ember.Controller.extend(
         }
 
         $.ajax({
-          url: "http://localhost:8080/VideoPlayer_war_exploded/CommentServlet",
+          url: AppConfig.CommentServlet_API_URL,
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify({ mediaId: playlistId, comment: commentText }),
@@ -124,7 +125,7 @@ export default Ember.Controller.extend(
         let playlistId = this.get('model.id'); // Use ID
 
         $.ajax({
-          url: `http://localhost:8080/VideoPlayer_war_exploded/CommentServlet?mediaId=${encodeURIComponent(playlistId)}`,
+          url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(playlistId)}`,
           type: "GET",
           dataType: "json",
           success: (data) => {

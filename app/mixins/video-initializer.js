@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import AppConfig from "../config/app-config";
 
 export default Ember.Mixin.create({
 
@@ -10,6 +11,7 @@ export default Ember.Mixin.create({
       console.error("Video not found!");
       return;
     }
+
 
     videoElement.crossOrigin = 'anonymous';
         this.set('videoElement', videoElement);
@@ -67,6 +69,18 @@ export default Ember.Mixin.create({
     console.log('Video player initialized successfully!');
   },
 
+  setupVideoDuration() {
+    let videoElement = document.getElementById("videoPlayer");
+
+    if (videoElement) {
+      videoElement.addEventListener("loadedmetadata", () => {
+        let duration = videoElement.duration;
+        let formattedDuration = this.formatTimetoRelative(duration);
+        document.getElementById("videoDuration").innerText = formattedDuration;
+      });
+    }
+  },
+
   loadSingleVideo() {
     const videoElement = this.get('videoElement');
     const videoModel = this.get('model');
@@ -81,7 +95,7 @@ export default Ember.Mixin.create({
       const videoFileName = videoModel.fileName;
       circleLoader.classList.remove('hidden');
 
-      videoElement.src = `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(videoFileName)}`;
+      videoElement.src = `${AppConfig.VideoServlet_API_URL}?video=${encodeURIComponent(videoFileName)}`;
       videoElement.load();
 
       videoElement.addEventListener('canplay', () => circleLoader.classList.add('hidden'));
@@ -98,7 +112,7 @@ export default Ember.Mixin.create({
   loadSubtitle(videoFileName) {
     const videoElement = this.get('videoElement');
 
-    fetch(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?subtitle=${encodeURIComponent(videoFileName)}`)
+    fetch(`${AppConfig.VideoServlet_API_URL}?subtitle=${encodeURIComponent(videoFileName)}`)
       .then(response => {
         if (response.ok) {
           const subtitleTrack = document.createElement("track");

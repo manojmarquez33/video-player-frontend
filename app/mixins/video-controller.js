@@ -1,5 +1,5 @@
 import Ember from 'ember';
-
+import AppConfig from "../config/app-config";
 export default Ember.Mixin.create({
 
   actions: {
@@ -36,7 +36,7 @@ export default Ember.Mixin.create({
       console.log(" Updating like status for:", fileName, "Status:", status);
 
       Ember.$.ajax({
-        url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet`,
+        url: `${AppConfig.VideoServlet_API_URL}`,
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({ video: fileName, likeStatus: status }),

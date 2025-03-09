@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import $ from 'jquery';
+import AppConfig from "../config/app-config";
 
 export default Ember.Controller.extend({
   searchQuery: '',
@@ -20,7 +21,7 @@ export default Ember.Controller.extend({
       }
 
       $.ajax({
-        url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?search=${encodeURIComponent(query)}`,
+        url: `${AppConfig.VideoServlet_API_URL}?search=${encodeURIComponent(query)}`,
         type: 'GET',
         dataType: 'json',
         success: (data) => {
@@ -37,7 +38,7 @@ export default Ember.Controller.extend({
     fetchAllVideos() {
       console.log("Fetching all videos and playlists...");
       $.ajax({
-        url: "http://localhost:8080/VideoPlayer_war_exploded/VideoServlet",
+        url: `${AppConfig.VideoServlet_API_URL}`,
         type: "GET",
         dataType: "json",
         success: (data) => {
@@ -50,5 +51,6 @@ export default Ember.Controller.extend({
         }
       });
     }
+
   }
 });
