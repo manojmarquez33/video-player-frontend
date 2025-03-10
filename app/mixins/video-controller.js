@@ -111,6 +111,7 @@ export default Ember.Mixin.create({
 
     fastRewind() {
       let video = this.get('videoElement');
+      video.pause();
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 

@@ -157,7 +157,7 @@ video::-webkit-media-controls-panel {
 .video-seek-bar::-moz-range-thumb {
   width: 14px;
   height: 14px;
-  background: #e0dd1b;
+  background: #007fff;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -166,7 +166,7 @@ video::-webkit-media-controls-panel {
 .video-seek-bar::-ms-thumb {
   width: 14px;
   height: 14px;
-  background: #e0dd1b;
+  background: #007FFF;
   border-radius: 50%;
   cursor: pointer;
 }

@@ -38,7 +38,9 @@ export default Ember.Controller.extend(
     init() {
       this._super(...arguments);
       Ember.run.scheduleOnce('afterRender', this, this.setupVideoPlayer);
-      console.log("Waiting for model to be set...");
+      Ember.$(document).on('click', '.timestamp', (event) => {
+        this.send('handleTimeClick', event);
+      });
     },
 
     modelObserver: Ember.observer('model', function() {
@@ -75,8 +77,35 @@ export default Ember.Controller.extend(
         });
     },
 
+    detectTime(comment) {
+      let regex = /\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g;
+      return comment.replace(regex, (match) => {
+        return `<span class="timestamp" style="color: blue; cursor: pointer;" data-time="${match}">${match}</span>`;
+      });
+    },
+
+    formatRelativeTime(timestamp) {
+      let time = new Date(timestamp);
+      let now = new Date();
+      let diff = Math.floor((now - time) / 1000);
+
+      if (diff < 60) {
+        return "just now";
+      }
+      if (diff < 3600) {
+        return `${Math.floor(diff / 60)} minutes ago`;
+      }
+      if (diff < 86400) {
+        return `${Math.floor(diff / 3600)} hours ago`;
+      }
+      if (diff < 604800) {
+        return `${Math.floor(diff / 86400)} days ago`;
+      }
+
+      return time.toLocaleDateString();
+    },
     fetchComments() {
-      let playlistId = this.get('model.id');
+      let playlistId = this.get('model.playlistId');
 
       if (!playlistId) {
         console.warn("Skipping comment fetch: Invalid playlist ID.");
@@ -94,8 +123,29 @@ export default Ember.Controller.extend(
     },
 
     actions: {
+
+      handleTimeClick(event) {
+        let clickedElement = event && event.target;
+        if (!clickedElement || !clickedElement.classList.contains("timestamp")) {
+          return;
+        }
+
+        let timestampText = clickedElement.dataset.time;
+        let timeParts = timestampText.split(":").map(Number);
+        let seekTime;
+
+        if (timeParts.length === 3) {
+          seekTime = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+        } else {
+          seekTime = timeParts[0] * 60 + timeParts[1];
+        }
+
+        console.log(`Timestamp clicked: Seeking to ${seekTime}s`);
+        this.seekVideo(seekTime);
+      },
+
       postComment() {
-        let playlistId = this.get('model.id'); // Use ID
+        let playlistId = this.get('model.playlistId');
         let commentText = $("#commentText").val().trim();
 
         if (!commentText) {
@@ -103,7 +153,7 @@ export default Ember.Controller.extend(
           return;
         }
 
-        $.ajax({
+        Ember.$.ajax({
           url: AppConfig.CommentServlet_API_URL,
           type: "POST",
           contentType: "application/json",
@@ -122,20 +172,89 @@ export default Ember.Controller.extend(
       },
 
       viewComments() {
-        let playlistId = this.get('model.id'); // Use ID
+        let playlistId = this.get('model.playlistId');
 
         $.ajax({
           url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(playlistId)}`,
           type: "GET",
           dataType: "json",
           success: (data) => {
-            this.set('comments', data);
+            console.log("Fetched comments:", data);
+            let processedComments = data.map(comment => {
+              return {
+                commentId: comment.commentId,
+                commentText: this.detectTime(comment.commentText),
+                relativeTime: this.formatRelativeTime(comment.createdAt)
+              };
+            });
+            this.set('comments', processedComments);
           },
           error: (err) => {
             console.error("Failed to fetch comments", err);
             this.set('comments', []);
           }
         });
+      },
+
+      editComment(comment) {
+
+        let updatedText = prompt("Edit your comment:", comment.commentText);
+
+        if (!updatedText || updatedText.trim() === "" || updatedText.trim() === comment.commentText) {
+          return;
+        }
+        Ember.$.ajax({
+          url: AppConfig.CommentServlet_API_URL,
+          type: "PUT",
+          contentType: "application/json",
+          data: JSON.stringify({
+            commentId: comment.commentId,
+            comment: updatedText.trim()
+          }),
+          success: () => {
+            alert("Comment updated successfully!");
+
+            this.send("viewComments");
+          },
+          error: (jqXHR, _textStatus, _errorThrown) => {
+            console.error("Failed to post comment", {
+              status: jqXHR.status,
+              textStatus: _textStatus,
+              error: _errorThrown,
+              response: jqXHR.responseText
+            });
+            this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
+            Ember.run.later(this, function() {
+              this.set('commentStatusMessage', null);
+            }, 3000);
+          }
+
+        });
+      },
+
+
+      deleteComment(comment) {
+        if (confirm("Are you sure you want to delete this comment?")) {
+          Ember.$.ajax({
+            url: `${AppConfig.CommentServlet_API_URL}?commentId=${comment.commentId}`,
+            type: "DELETE",
+            success: () => {
+              alert("Comment deleted successfully!");
+              this.send("viewComments");
+            },
+            error: (jqXHR) => {
+              console.error("Failed to post comment", {
+                status: jqXHR.status,
+                response: jqXHR.responseText
+              });
+              this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
+              Ember.run.later(this, function() {
+                this.set('commentStatusMessage', null);
+              }, 3000);
+            }
+
+          });
+        }
       }
     },
 

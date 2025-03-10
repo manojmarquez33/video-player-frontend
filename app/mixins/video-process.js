@@ -57,7 +57,7 @@ export default Ember.Mixin.create({
 
     if (videoBar) {
       videoBar.value = elapsedTime;
-      this.updateBufferedRange();
+      this.updateBufferedRange(elapsedTime);
     }
 
     if (currentTimeElement) {
@@ -65,44 +65,122 @@ export default Ember.Mixin.create({
     }
   },
 
+  // onVideoBarInput(event) {
+  //   const seekTime = parseFloat(event.target.value);
+  //   const videoElement = this.get('videoElement');
+  //   const videoBar = document.getElementById('videoBar');
+  //   const circleLoader = document.getElementById('circleLoader');
+  //
+  //   if (!videoElement || !videoBar || !circleLoader) {
+  //     console.error("Video element, seek bar, or circle loader not found!");
+  //     return;
+  //   }
+  //
+  //   if (this.get('isPlayList')) {
+  //     const videoDurations = this.get('videoDurations');
+  //     if (!videoDurations || videoDurations.length === 0) {
+  //       return;
+  //     }
+  //
+  //     let accumulatedTime = 0;
+  //     let targetVideoIndex = 0;
+  //     let relativeSeekTime = 0;
+  //
+  //     for (let i = 0; i < videoDurations.length; i++) {
+  //       if (seekTime < accumulatedTime + videoDurations[i]) {
+  //         targetVideoIndex = i;
+  //         relativeSeekTime = seekTime - accumulatedTime;
+  //         break;
+  //       }
+  //       accumulatedTime += videoDurations[i];
+  //     }
+  //
+  //     console.log(`Seeking to ${seekTime}s, which falls into Video ${targetVideoIndex} at ${relativeSeekTime}s`);
+  //
+  //     if (this.get('currentVideoIndex') === targetVideoIndex) {
+  //       videoElement.currentTime = relativeSeekTime;
+  //     } else {
+  //       this.set('currentVideoIndex', targetVideoIndex);
+  //       this.loadVideoAtIndex(targetVideoIndex, relativeSeekTime);
+  //     }
+  //
+  //     videoBar.value = seekTime;
+  //   } else {
+  //     console.log(`Seeking within single video: ${seekTime}s`);
+  //     videoElement.currentTime = seekTime;
+  //     videoBar.value = seekTime;
+  //   }
+  // },
+
   onVideoBarInput(event) {
-    const seekTime = parseFloat(event.target.value);
+    const seekValue = parseFloat(event.target.value);
+    console.log(`Seekbar changed: Seeking to ${seekValue}s`);
+    this.seekVideo(seekValue);
+  },
+  seekVideo(seekValue) {
+    console.log(`seekVideo called with: ${seekValue}s`);
+
     const videoElement = this.get('videoElement');
-
-    const videoBar = document.getElementById('videoBar');
-    const circleLoader = document.getElementById('circleLoader');
-
-    if (!videoElement || !videoBar || !circleLoader) {
-      console.error("Video element, seek bar, or circle loader not found!");
+    if (!videoElement) {
+      console.error("Video element not found!");
       return;
     }
 
-    let bufferEnd = 0;
-
-    for (let i = 0; i < videoElement.buffered.length; i++) {
-      if (videoElement.buffered.start(i) <= seekTime) {
-        bufferEnd = videoElement.buffered.end(i);
+    if (this.get('isPlayList')) {
+      const videoDurations = this.get('videoDurations');
+      if (!videoDurations || videoDurations.length === 0) {
+        console.error("No video durations found!");
+        return;
       }
-    }
 
-    videoElement.currentTime = seekTime;
-    videoBar.value = seekTime;
+      let accumulatedTime = 0;
+      let targetVideoIndex = 0;
+      let relativeSeekTime = 0;
 
-    console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferEnd}sec`);
+      for (let i = 0; i < videoDurations.length; i++) {
+        if (seekValue < accumulatedTime + videoDurations[i]) {
+          targetVideoIndex = i;
+          relativeSeekTime = seekValue - accumulatedTime;
+          break;
+        }
+        accumulatedTime += videoDurations[i];
+      }
 
-    if (seekTime <= bufferEnd) {
-      circleLoader.classList.add('hidden');
-      videoElement.play();
+      console.log(`Seeking to ${seekValue}s, which falls into Video ${targetVideoIndex} at ${relativeSeekTime}s`);
+
+      if (this.get('currentVideoIndex') !== targetVideoIndex) {
+        this.set('currentVideoIndex', targetVideoIndex);
+        this.loadVideoAtIndex(targetVideoIndex, relativeSeekTime);
+      } else {
+        videoElement.currentTime = relativeSeekTime;
+      }
     } else {
-      console.log(`Seek to: ${seekTime}sec, Buffer end: ${bufferEnd}sec`);
-      console.log(`seekTime ${seekTime}()>= bufferEnd (${bufferEnd}sec)..so...I am wait for buffer to load`);
-
-      circleLoader.classList.remove('hidden');
-
-      this.set('isSeekMoreBuff', true);
-      this.set('seekTargetTime', seekTime);
-
+      console.log(`Seeking within single video: ${seekValue}s`);
+      videoElement.currentTime = seekValue;
     }
+  },
+
+  loadVideoAtIndex(index, startTime = 0) {
+    const videoElement = this.get('videoElement');
+    const videoSources = this.get('videoSources');
+
+
+    if (!videoElement || !videoSources || !videoSources[index]) {
+      console.error("Invalid video index or sources");
+      return;
+    }
+
+    videoElement.src = videoSources[index];
+    videoElement.load();
+
+
+    videoElement.onloadeddata = () => {
+      videoElement.currentTime = startTime;
+      videoElement.play();
+      console.log(`Loaded Video ${index} and seeked to ${startTime}s`);
+    };
+
+    this.set('currentVideoIndex', index);
   },
 
   updateBufferedRange() {
@@ -114,19 +192,37 @@ export default Ember.Mixin.create({
       return;
     }
 
-    const currentTime = videoElement.currentTime;
-    const duration = videoElement.duration;
+    let playedTime, bufferEnd, playedPercent, bufferedPercent;
 
-    let bufferEnd = 0;
+    if (this.get('isPlayList')) {
+      const currentVideoIndex = this.get('currentVideoIndex');
+      const videoDurations = this.get('videoDurations');
+      const totalDuration = this.get('totalDuration');
 
-    for (let i = 0; i < videoElement.buffered.length; i++) {
-      if (videoElement.buffered.start(i) <= currentTime) {
-        bufferEnd = videoElement.buffered.end(i);
+      playedTime = 0;
+      for (let i = 0; i < currentVideoIndex; i++) {
+        playedTime += videoDurations[i];
       }
+      playedTime += videoElement.currentTime;
+
+      bufferEnd = playedTime;
+      for (let i = 0; i < videoElement.buffered.length; i++) {
+        if (videoElement.buffered.start(i) <= videoElement.currentTime) {
+          bufferEnd = playedTime + (videoElement.buffered.end(i) - videoElement.currentTime);
+        }
+      }
+
+      playedPercent = (playedTime / totalDuration) * 100;
+      bufferedPercent = (bufferEnd / totalDuration) * 100;
+    } else {
+      const duration = videoElement.duration;
+      playedTime = videoElement.currentTime;
+      bufferEnd = videoElement.buffered.length > 0 ? videoElement.buffered.end(0) : 0;
+
+      playedPercent = (playedTime / duration) * 100;
+      bufferedPercent = (bufferEnd / duration) * 100;
     }
 
-    const playedPercent = (currentTime / duration) * 100;
-    const bufferedPercent = (bufferEnd / duration) * 100;
 
     videoBar.style.background = `linear-gradient(
     to right,

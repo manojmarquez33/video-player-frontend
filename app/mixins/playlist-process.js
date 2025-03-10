@@ -9,16 +9,14 @@ export default Ember.Mixin.create({
 
   loadPlaylist() {
     const model = this.get('model');
-    const circleLoader = document.getElementById('circleLoader');
+    console.log("Model received in loadPlaylist:", model);  // ✅ Debug model
 
-    if (!model || !Array.isArray(model.videoList)) {
-      console.error(" Missing playlist data.");
+    if (!model || !Array.isArray(model.videoList) || model.videoList.length === 0) {
+      console.error("❌ Missing or empty playlist data.");
       return;
     }
 
-    if (circleLoader) {
-      circleLoader.classList.remove('hidden');
-    }
+    console.log("✅ Video list:", model.videoList.map(v => v.url)); // Debugging video URLs
 
     const videoUrls = model.videoList.map(video => video.url);
     this.setProperties({
