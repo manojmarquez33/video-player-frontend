@@ -5,14 +5,14 @@
         <source src="{{video.url}}#t=0.1" type="video/mp4">
       </video>
     {{/link-to}}
-    {{else if (equal video.type "playlist")}}
-      {{#link-to "video-playlist" video.fileName}}
-        <img height="150px" src="assets/images/video-playlist.png" class="thumbnail">
-      {{/link-to}}
-    {{/if}}
+  {{else if (equal video.type "playlist")}}
+    {{#link-to "video-playlist" video.fileName}}
+      <img height="150px" src="assets/images/video-playlist.png" class="thumbnail" alt="Playlist Thumbnail">
+    {{/link-to}}
+  {{/if}}
 
-    <p class="video-title">{{video.fileName}}</p>
-    <p class="video-info">{{video.size}}</p>
-    <p class="video-info">Created {{daysAgo}} ago</p>
-    <div class="duration-overlay"></div>
-  </div>
+  <p class="video-title">{{video.fileName}}</p>
+  <p class="video-info">{{video.size}}</p>
+  <p class="video-info">Created {{daysAgo}} ago</p>
+  <div class="duration-overlay"></div>
+</div>

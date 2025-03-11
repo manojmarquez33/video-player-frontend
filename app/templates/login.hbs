@@ -1,0 +1,22 @@
+<div class="auth-container">
+  <div class="auth-box">
+    <img src="assets/images/video-player.png" alt="ZoTube Logo" class="auth-logo">
+    <h2 class="auth-title">Login to ZoTube</h2>
+
+    <div class="input-group">
+      <label>Username:</label>
+      {{input value=username placeholder="Enter username"}}
+    </div>
+
+    <div class="input-group">
+      <label>Password:</label>
+      {{input type="password" value=password placeholder="Enter password"}}
+    </div>
+
+    <button class="auth-button" {{action "login"}}>Login</button>
+
+    <p class="auth-footer">
+      Don't have an account? {{#link-to "signup"}}Sign up here{{/link-to}}
+    </p>
+  </div>
+</div>

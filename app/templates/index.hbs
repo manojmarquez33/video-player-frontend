@@ -1,21 +1,28 @@
-  <header class="header">
-    <img src="assets/images/video-player.png" alt="Logo" class="logo">
-    <span class="brand-title">ZoTube</span>
-  </header>
+{{#if username}}
+        <span class="user-greeting">Welcome, {{username}}</span>
+      {{/if}}
 
-  <div class="search-container">
-    {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
-  </div>
+<header class="header">
 
-  <div class="video-container">
-    {{#if model.length}}
-      {{#each model as |video|}}
-        {{video-item video=video}}
-      {{/each}}
-    {{else}}
-      <div class="no-results-container">
-        <img src="assets/images/no-result.png" width='150' height='150' class="no-results-image" alt="No Results">
-        <p class="no-results-text">No results found. 😑</p>
-      </div>
-    {{/if}}
-  </div>
+  <img src="assets/images/video-player.png" alt="Logo" class="logo">
+  <span class="brand-title">ZoTube</span>
+
+</header>
+
+{{#link-to "logout" class="logout-button"}}Logout{{/link-to}}
+<div class="search-container">
+  {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
+</div>
+
+<div class="video-container">
+  {{#if model.length}}
+    {{#each model as |video|}}
+      {{video-item video=video}}
+    {{/each}}
+  {{else}}
+    <div class="no-results-container">
+      <img src="assets/images/no-result.png" width='150' height='150' class="no-results-image" alt="No Results">
+      <p class="no-results-text">No results found. 😑</p>
+    </div>
+  {{/if}}
+</div>

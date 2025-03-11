@@ -7,7 +7,11 @@ export default Ember.Controller.extend({
 
   init() {
     this._super(...arguments);
-    this.send('fetchAllVideos'); // 🔥 Fetch videos when the page loads
+    this.send('fetchAllVideos');
+    let storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      this.set('username', storedUsername);
+    }
   },
 
   actions: {

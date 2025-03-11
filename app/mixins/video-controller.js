@@ -25,7 +25,7 @@ export default Ember.Mixin.create({
     },
 
     updateLikeStatus(status) {
-      let fileName;
+      let fileName, mediaId, username;
 
       if (this.get('isPlayList')) {
         fileName = this.get('model.playlistName');
@@ -33,26 +33,39 @@ export default Ember.Mixin.create({
         fileName = this.get('model.fileName');
       }
 
-      console.log(" Updating like status for:", fileName, "Status:", status);
+      mediaId = this.get('model.id');
+      username = localStorage.getItem("username");
+
+      if (!username) {
+        console.error("Error: Username is missing in localStorage!");
+        return;
+      }
+
+      console.log("Updating like status for:", fileName, "Media ID:", mediaId, "Username:", username, "Status:", status);
 
       Ember.$.ajax({
         url: `${AppConfig.VideoServlet_API_URL}`,
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify({ video: fileName, likeStatus: status }),
+        data: JSON.stringify({
+          mediaId: mediaId,
+          video: fileName,
+          username: username,
+          likeStatus: status
+        }),
         success: () => {
           if (status === 1) {
             this.set('isLiked', true);
             this.set('isDisliked', false);
-            console.log(" Like status response:", 1);
+            console.log("Like status updated: 1");
           } else if (status === -1) {
             this.set('isLiked', false);
             this.set('isDisliked', true);
-            console.log("Like status response:", -1);
-          }else {
+            console.log("Like status updated: -1");
+          } else {
             this.set('isLiked', false);
             this.set('isDisliked', false);
-            console.log(" Reset like status to default.");
+            console.log("Like status reset to default.");
           }
         },
         error: (jqXHR, textStatus, errorThrown) => {

@@ -1,0 +1,38 @@
+<div class="auth-container">
+  <div class="auth-box">
+    <img src="assets/images/video-player.png" alt="ZoTube Logo" class="auth-logo">
+    <h2 class="auth-title">Create an Account</h2>
+
+    {{#if errorMessage}}
+      <p class="error-message">{{errorMessage}}</p>
+    {{/if}}
+
+    <form {{action "registerUser" on="submit"}}>
+      <div class="input-group">
+        <label>Username:</label>
+        {{input type="text" value=username placeholder="Enter username"}}
+      </div>
+
+      <div class="input-group">
+        <label>Email:</label>
+        {{input type="email" value=email placeholder="Enter email"}}
+      </div>
+
+      <div class="input-group">
+        <label>Password:</label>
+        {{input type="password" value=password placeholder="Enter password"}}
+      </div>
+
+      <div class="input-group">
+        <label>Confirm Password:</label>
+        {{input type="password" value=confirmPassword placeholder="Confirm password"}}
+      </div>
+
+      <button type="submit" class="auth-button">Sign Up</button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? {{#link-to "login"}}Login here{{/link-to}}
+    </p>
+  </div>
+</div>

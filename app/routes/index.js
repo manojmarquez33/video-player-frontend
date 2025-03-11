@@ -1,9 +1,18 @@
 import Ember from 'ember';
-import $ from 'jquery';
-import AppConfig from "../config/app-config";
 
 export default Ember.Route.extend({
+  session: Ember.inject.service(),
+
+  beforeModel() {
+    let sessionId = Ember.$.cookie("sessionId");
+
+    if (!sessionId) {
+      alert('You are not logged in.');
+      this.transitionTo('login');
+    }
+  },
+
   model() {
-    return $.getJSON(`${AppConfig.VideoServlet_API_URL}`);
+    return Ember.$.getJSON('http://localhost:8080/VideoPlayer_war_exploded/VideoServlet');
   }
 });

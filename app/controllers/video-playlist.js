@@ -37,9 +37,15 @@ export default Ember.Controller.extend(
 
     init() {
       this._super(...arguments);
-      Ember.run.scheduleOnce('afterRender', this, this.setupVideoPlayer);
-      Ember.$(document).on('click', '.timestamp', (event) => {
-        this.send('handleTimeClick', event);
+      let storedUsername = localStorage.getItem("username");
+      console.log("Logged-in username:", storedUsername); // Debugging
+      this.set("currentUsername", storedUsername);
+      Ember.run.scheduleOnce('afterRender', this, function () {
+        this.setupVideoPlayer();
+       // this.setupVideoDuration();
+        Ember.$('.comments-section').on('click', '.timestamp', (event) => {
+          this.send('handleTimeClick', event);
+        });
       });
     },
 
@@ -55,26 +61,34 @@ export default Ember.Controller.extend(
       this.fetchLikeStatus(playlistName);
     }),
 
-    fetchLikeStatus(playlistName) {
-      console.log("Fetching like status for playlist:", playlistName);
+    fetchLikeStatus() {
+      let mediaId = this.get('model.id');
+      let username = localStorage.getItem("username");
 
-      Ember.$.getJSON(`${AppConfig.VideoServlet_API_URL}?video=${encodeURIComponent(playlistName)}&likeStatus=1`)
-        .then(response => {
-          console.log("Like status response:", response);
-          if (response.likeStatus === 1) {
-            this.set('isLiked', true);
-            this.set('isDisliked', false);
-          } else if (response.likeStatus === -1) {
-            this.set('isLiked', false);
-            this.set('isDisliked', true);
-          } else {
-            this.set('isLiked', false);
-            this.set('isDisliked', false);
-          }
-        })
-        .fail((jqXHR, textStatus, errorThrown) => {
-          console.error("Error fetching like status:", errorThrown);
-        });
+      if (!mediaId || !username) {
+        console.error("Missing mediaId or username");
+        return;
+      }
+
+      Ember.$.getJSON(`http://localhost:8080/VideoPlayer_war_exploded/VideoServlet`, {
+        mediaId: mediaId,
+        username: username
+      }).then(response => {
+        console.log("Like status:", response);
+        this.set('likeStatus', response.likeStatus);
+        if (response.likeStatus === 1) {
+          this.set('isLiked', true);
+          this.set('isDisliked', false);
+        } else if (response.likeStatus === -1) {
+          this.set('isLiked', false);
+          this.set('isDisliked', true);
+        } else {
+          this.set('isLiked', false);
+          this.set('isDisliked', false);
+        }
+      }).fail((xhr) => {
+        console.error("Error fetching like status:", xhr.responseText);
+      });
     },
 
     detectTime(comment) {
@@ -86,6 +100,10 @@ export default Ember.Controller.extend(
 
     formatRelativeTime(timestamp) {
       let time = new Date(timestamp);
+      if (isNaN(time)) {
+        console.error("Invalid timestamp:", timestamp);
+        return "Invalid Date";
+      }
       let now = new Date();
       let diff = Math.floor((now - time) / 1000);
 
@@ -102,10 +120,11 @@ export default Ember.Controller.extend(
         return `${Math.floor(diff / 86400)} days ago`;
       }
 
-      return time.toLocaleDateString();
+      return time.toLocaleString();
     },
+
     fetchComments() {
-      let playlistId = this.get('model.playlistId');
+      let playlistId = this.get('model.id');
 
       if (!playlistId) {
         console.warn("Skipping comment fetch: Invalid playlist ID.");
@@ -126,26 +145,27 @@ export default Ember.Controller.extend(
 
       handleTimeClick(event) {
         let clickedElement = event && event.target;
-        if (!clickedElement || !clickedElement.classList.contains("timestamp")) {
-          return;
+        if (clickedElement && clickedElement.classList.contains("timestamp")) {
+          let timestampText = clickedElement.dataset.time;
+          let timeParts = timestampText.split(":").map(Number);
+
+          let seconds;
+          if (timeParts.length === 3) {
+            seconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+          } else {
+            seconds = timeParts[0] * 60 + timeParts[1];
+          }
+
+          console.log(`Timestamp clicked: ${timestampText} (${seconds}s)`);
+
+          this.send('seekVideo', seconds);
         }
-
-        let timestampText = clickedElement.dataset.time;
-        let timeParts = timestampText.split(":").map(Number);
-        let seekTime;
-
-        if (timeParts.length === 3) {
-          seekTime = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
-        } else {
-          seekTime = timeParts[0] * 60 + timeParts[1];
-        }
-
-        console.log(`Timestamp clicked: Seeking to ${seekTime}s`);
-        this.seekVideo(seekTime);
       },
 
       postComment() {
-        let playlistId = this.get('model.playlistId');
+        let mediaId = this.get('model.id');
+        let username = localStorage.getItem("username");
+
         let commentText = $("#commentText").val().trim();
 
         if (!commentText) {
@@ -157,36 +177,51 @@ export default Ember.Controller.extend(
           url: AppConfig.CommentServlet_API_URL,
           type: "POST",
           contentType: "application/json",
-          data: JSON.stringify({ mediaId: playlistId, comment: commentText }),
+          data: JSON.stringify({mediaId: mediaId, username:username, comment: commentText}),
           success: () => {
             this.set('commentStatusMessage', 'Comment posted successfully!');
             $("#commentText").val('');
-            Ember.run.later(this, function() {
+            Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
             }, 3000);
           },
-          error: (err) => {
-            console.error("Failed to post comment", err);
+          error: (jqXHR, textStatus, errorThrown) => {
+            console.error("Failed to post comment", {
+              status: jqXHR.status,
+              statusText: textStatus,
+              error: errorThrown,
+              response: jqXHR.responseText
+            });
+            this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
+            Ember.run.later(this, function () {
+              this.set('commentStatusMessage', null);
+            }, 3000);
           }
         });
       },
 
       viewComments() {
-        let playlistId = this.get('model.playlistId');
+        let videoId = this.get('model.id');
 
-        $.ajax({
-          url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(playlistId)}`,
+        Ember.$.ajax({
+          url: `${AppConfig.CommentServlet_API_URL}?mediaId=${encodeURIComponent(videoId)}`,
           type: "GET",
           dataType: "json",
           success: (data) => {
             console.log("Fetched comments:", data);
+
+            this.set('comments', []);
+
             let processedComments = data.map(comment => {
               return {
-                commentId: comment.commentId,
-                commentText: this.detectTime(comment.commentText),
-                relativeTime: this.formatRelativeTime(comment.createdAt)
+                commentId: comment.comment_id,
+                userId: comment.user_id,
+                commentText: comment.comment_text,
+                username: comment.username,
+                relativeTime: this.formatRelativeTime(new Date(comment.created_at))
               };
             });
+
             this.set('comments', processedComments);
           },
           error: (err) => {
@@ -209,6 +244,7 @@ export default Ember.Controller.extend(
           contentType: "application/json",
           data: JSON.stringify({
             commentId: comment.commentId,
+            username: localStorage.getItem("username"),
             comment: updatedText.trim()
           }),
           success: () => {
@@ -232,27 +268,32 @@ export default Ember.Controller.extend(
         });
       },
 
-
       deleteComment(comment) {
+        let username = localStorage.getItem("username");
+
+        if (!username) {
+          console.error("Username not found in localStorage.");
+          alert("User not logged in.");
+          return;
+        }
+
+        console.log("Deleting comment with ID:", comment.commentId, "by user:", username);
+
         if (confirm("Are you sure you want to delete this comment?")) {
           Ember.$.ajax({
-            url: `${AppConfig.CommentServlet_API_URL}?commentId=${comment.commentId}`,
+            url: `${AppConfig.CommentServlet_API_URL}?commentId=${comment.commentId}&username=${username}`,
             type: "DELETE",
             success: () => {
               alert("Comment deleted successfully!");
               this.send("viewComments");
             },
             error: (jqXHR) => {
-              console.error("Failed to post comment", {
+              console.error("Failed to delete comment", {
                 status: jqXHR.status,
                 response: jqXHR.responseText
               });
-              this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
-              Ember.run.later(this, function() {
-                this.set('commentStatusMessage', null);
-              }, 3000);
+              alert("Failed to delete comment. Please try again later.");
             }
-
           });
         }
       }

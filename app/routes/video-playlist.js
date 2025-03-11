@@ -9,7 +9,7 @@ export default Ember.Route.extend({
       .then(response => {
         console.log(" response from server:", response);
 
-        let playlistId = response.playlist_id;
+        let id = response.playlist_id;
 
         let videoList = response.videos.map(file => ({
           fileName: file.fileName,
@@ -19,11 +19,11 @@ export default Ember.Route.extend({
           lastModified: file.lastModified
         }));
 
-        console.log("Playlist ID:", playlistId);
+        console.log("Playlist ID:", id);
         console.log("Processed video list:", videoList);
 
         return {
-          playlistId,
+          id,
           playlistName: params.playlist_name,
           videoList
         };
