@@ -23,12 +23,8 @@ export default Ember.Controller.extend({
         console.log("Login Response:", response);
 
         if (response.success) {
-          if (!response.user) {
-            alert("Login successful, but no username returned!");
-            return;
-          }
 
-          this.get('session').setUser(response.user, response.sessionId);
+          //this.get('session').setUser(response.user, response.sessionId);
           console.log("Username stored in session:", response.user);
 
           this.transitionToRoute('index');
@@ -41,3 +37,4 @@ export default Ember.Controller.extend({
     }
   }
 });
+

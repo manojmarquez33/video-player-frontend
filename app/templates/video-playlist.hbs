@@ -75,9 +75,14 @@
  <div class="right-section">
      <div class="button-controls">
        <div class="group">
-         <button {{action "likeVideo"}} class="like-dislike-btn like-btn {{if isLiked 'liked'}}">Like</button>
-         <button {{action "dislikeVideo"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">Dislike</button>
-       </div>
+                  <button {{action "likeVideo"}} class="like-dislike-btn like-btn {{if isLiked 'liked'}}">
+                    👍 Like <span class="count">({{likeCount}})</span>
+                  </button>
+
+                  <button {{action "dislikeVideo"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">
+                    👎 Dislike <span class="count">({{dislikeCount}})</span>
+                  </button>
+                </div>
        <div class="skip-control">
          <label for="skipInput">Skip</label>
          <input type="number" id="skipInput" placeholder="Enter seconds" />

@@ -2,6 +2,21 @@ import Ember from 'ember';
 import AppConfig from "../config/app-config";
 
 export default Ember.Route.extend({
+  session: Ember.inject.service(),
+
+  beforeModel() {
+    return this.get('session').fetchUsernameFromSession().then(function (username) {
+      if (!username) {
+        alert("You are not logged in.");
+        this.transitionTo("login");
+      }
+    }.bind(this))
+      .catch(function () {
+        alert("You are not logged in.");
+        this.transitionTo("login");
+      }.bind(this));
+  },
+
   model(params) {
     console.log("Fetching video details for:", params.video_name);
 

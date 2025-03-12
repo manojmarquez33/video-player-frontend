@@ -2,77 +2,79 @@ import Ember from 'ember';
 import AppConfig from "../config/app-config";
 export default Ember.Mixin.create({
 
+  session: Ember.inject.service(),
+
   actions: {
 
     playbackRate: 1.0,
 
 
 
-    likeVideo() {
-      if (this.get('isLiked')) {
-        this.send('updateLikeStatus', 0);
-      } else {
-        this.send('updateLikeStatus', 1);
-      }
-    },
-
-    dislikeVideo() {
-      if (this.get('isDisliked')) {
-        this.send('updateLikeStatus', 0);
-      } else {
-        this.send('updateLikeStatus', -1);
-      }
-    },
-
-    updateLikeStatus(status) {
-      let fileName, mediaId, username;
-
-      if (this.get('isPlayList')) {
-        fileName = this.get('model.playlistName');
-      } else {
-        fileName = this.get('model.fileName');
-      }
-
-      mediaId = this.get('model.id');
-      username = localStorage.getItem("username");
-
-      if (!username) {
-        console.error("Error: Username is missing in localStorage!");
-        return;
-      }
-
-      console.log("Updating like status for:", fileName, "Media ID:", mediaId, "Username:", username, "Status:", status);
-
-      Ember.$.ajax({
-        url: `${AppConfig.VideoServlet_API_URL}`,
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify({
-          mediaId: mediaId,
-          video: fileName,
-          username: username,
-          likeStatus: status
-        }),
-        success: () => {
-          if (status === 1) {
-            this.set('isLiked', true);
-            this.set('isDisliked', false);
-            console.log("Like status updated: 1");
-          } else if (status === -1) {
-            this.set('isLiked', false);
-            this.set('isDisliked', true);
-            console.log("Like status updated: -1");
-          } else {
-            this.set('isLiked', false);
-            this.set('isDisliked', false);
-            console.log("Like status reset to default.");
-          }
-        },
-        error: (jqXHR, textStatus, errorThrown) => {
-          console.error("Error updating like status:", errorThrown);
-        }
-      });
-    },
+    // likeVideo() {
+    //   if (this.get('isLiked')) {
+    //     this.send('updateLikeStatus', 0);
+    //   } else {
+    //     this.send('updateLikeStatus', 1);
+    //   }
+    // },
+    //
+    // dislikeVideo() {
+    //   if (this.get('isDisliked')) {
+    //     this.send('updateLikeStatus', 0);
+    //   } else {
+    //     this.send('updateLikeStatus', -1);
+    //   }
+    // },
+    //
+    // updateLikeStatus(status) {
+    //   let fileName, mediaId, username;
+    //
+    //   if (this.get('isPlayList')) {
+    //     fileName = this.get('model.playlistName');
+    //   } else {
+    //     fileName = this.get('model.fileName');
+    //   }
+    //
+    //   mediaId = this.get('model.id');
+    //   username = this.get('session').getCookie("username");
+    //
+    //   if (!username) {
+    //     console.error("Error: Username is missing in localStorage!");
+    //     return;
+    //   }
+    //
+    //   console.log("Updating like status for:", fileName, "Media ID:", mediaId, "Username:", username, "Status:", status);
+    //
+    //   Ember.$.ajax({
+    //     url: `${AppConfig.VideoServlet_API_URL}`,
+    //     type: "POST",
+    //     contentType: "application/json",
+    //     data: JSON.stringify({
+    //       mediaId: mediaId,
+    //       video: fileName,
+    //       username: username,
+    //       likeStatus: status
+    //     }),
+    //     success: () => {
+    //       if (status === 1) {
+    //         this.set('isLiked', true);
+    //         this.set('isDisliked', false);
+    //         console.log("Like status updated: 1");
+    //       } else if (status === -1) {
+    //         this.set('isLiked', false);
+    //         this.set('isDisliked', true);
+    //         console.log("Like status updated: -1");
+    //       } else {
+    //         this.set('isLiked', false);
+    //         this.set('isDisliked', false);
+    //         console.log("Like status reset to default.");
+    //       }
+    //     },
+    //     error: (jqXHR, textStatus, errorThrown) => {
+    //       console.error("Error updating like status:", errorThrown);
+    //     }
+    //   });
+    // },
 
     togglePlay() {
       const videoElement = this.get('videoElement');
