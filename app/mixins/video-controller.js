@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import AppConfig from "../config/app-config";
+
 export default Ember.Mixin.create({
 
   session: Ember.inject.service(),

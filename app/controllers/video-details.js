@@ -206,7 +206,7 @@ export default Ember.Controller.extend(
 
       handleTimeClick(event) {
         let clickedElement = event && event.target;
-        if (clickedElement && clickedElement.classList.contains("timestamp")) {
+        if (clickedElement && clickedElement.dataset.time) {
           let timestampText = clickedElement.dataset.time;
           let timeParts = timestampText.split(":").map(Number);
 
@@ -221,10 +221,45 @@ export default Ember.Controller.extend(
         }
       },
 
+      moveToVideoTime(videoTime) {
+        if (!videoTime) {
+          console.error("Invalid times clicked.");
+          return;
+        }
+
+        let timeParts = videoTime.split(":").map(Number);
+        let seconds = 0;
+
+        if (timeParts.length === 3) {
+          seconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+        } else if (timeParts.length === 2) {
+          seconds = timeParts[0] * 60 + timeParts[1];
+        }
+
+        let videoElement = document.getElementById("videoPlayer");
+        if (videoElement) {
+          videoElement.currentTime = seconds;
+          videoElement.play();
+        } else {
+          console.error("Video player not found.");
+        }
+      },
+
+
       postComment() {
         let mediaId = this.get('model.id');
         let username = this.get('session.user');
+        let videoElement = document.getElementById("videoPlayer");
 
+        if (!videoElement) {
+          alert("Video player not found.");
+          return;
+        }
+
+        let currentTime = videoElement.currentTime;
+        let minutes = Math.floor(currentTime / 60);
+        let seconds = Math.floor(currentTime % 60);
+        let formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
         let commentText = $("#commentText").val().trim();
 
@@ -237,7 +272,15 @@ export default Ember.Controller.extend(
           url: AppConfig.CommentServlet_API_URL,
           type: "POST",
           contentType: "application/json",
-          data: JSON.stringify({mediaId: mediaId, username:username, comment: commentText}),
+          data: JSON.stringify({
+            mediaId: mediaId,
+            username: username,
+            comment: commentText,
+            videoTime: formattedTime
+
+          }),
+
+
           success: () => {
             this.set('commentStatusMessage', 'Comment posted successfully!');
             $("#commentText").val('');
@@ -260,6 +303,7 @@ export default Ember.Controller.extend(
         });
       },
 
+
       viewComments() {
         let videoId = this.get('model.id');
 
@@ -277,11 +321,11 @@ export default Ember.Controller.extend(
                 commentId: comment.comment_id,
                 userId: comment.user_id,
                 commentText: comment.comment_text,
+                videoTime: comment.video_time,
                 username: comment.username,
                 relativeTime: this.formatRelativeTime(new Date(comment.created_at))
               };
             });
-
 
             this.set('comments', processedComments);
           },
@@ -291,6 +335,7 @@ export default Ember.Controller.extend(
           }
         });
       },
+
 
       editComment(comment) {
 
@@ -305,7 +350,7 @@ export default Ember.Controller.extend(
           contentType: "application/json",
           data: JSON.stringify({
             commentId: comment.commentId,
-            username: localStorage.getItem("username"),
+            username: this.get('session.user'),
             comment: updatedText.trim()
           }),
           success: () => {
@@ -334,7 +379,7 @@ export default Ember.Controller.extend(
 
 
         if (!username) {
-          console.error("Username not found in localStorage.");
+          console.error("Username not found in session.");
           alert("User not logged in.");
           return;
         }
