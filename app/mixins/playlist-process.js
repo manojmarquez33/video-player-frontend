@@ -9,14 +9,14 @@ export default Ember.Mixin.create({
 
   loadPlaylist() {
     const model = this.get('model');
-    console.log("Model received in loadPlaylist:", model);  // ✅ Debug model
+    console.log("Model received in loadPlaylist:", model);
 
     if (!model || !Array.isArray(model.videoList) || model.videoList.length === 0) {
       console.error("❌ Missing or empty playlist data.");
       return;
     }
 
-    console.log("✅ Video list:", model.videoList.map(v => v.url)); // Debugging video URLs
+    console.log("Video list:", model.videoList.map(v => v.url));
 
     const videoUrls = model.videoList.map(video => video.url);
     this.setProperties({

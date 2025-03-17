@@ -10,8 +10,7 @@
           <div id="circleLoader" class="loading-spinner hidden"></div>
           <video id="videoPlayer"></video>
         </div>
-
-
+        <div id="commentOverlay" class="comment-overlay"></div>
         <div class="video-controls">
           <div class="video-buttons">
             <span id="currentTime">0:00</span>
@@ -118,32 +117,39 @@
 
 
      <div class="comments-section">
-
-             {{#each comments as |comment|}}
-               <li class="comment-item">
-                 <p class="comment-user">
-                   {{#if (equal comment.username currentUsername)}}
-                     posted by you
-                   {{else}}
-                     @{{comment.username}}
-                   {{/if}}
-                 </p>
-               <p class="comment-text" data-comment-id="{{comment.commentId}}">
-                 {{detect-time comment.commentText}}
-               </p>
-                 <p class="comment-time">{{comment.relativeTime}}</p>
-                  {{#if (equal comment.username currentUsername)}}
-                             <div class="comment-actions">
-                               <button {{action "editComment" comment}}>Edit</button>
-                               <button {{action "deleteComment" comment}}>Delete</button>
-                             </div>
-                           {{/if}}
-               </li>
-             {{/each}}
+       {{#each comments as |comment|}}
+         <li class="comment-item">
+           <p class="comment-user">
+             {{#if (equal comment.username currentUsername)}}
+               posted by you
+             {{else}}
+               @{{comment.username}}
+             {{/if}}
+           </p>
+           <p class="comment-text" data-comment-id="{{comment.commentId}}">
+             {{detect-time comment.commentText}}
+           </p>
+           <p class="comment-time">
+        <span class="video-time"
+              style="color: blue; text-decoration: underline; cursor: pointer;"
+              data-time="{{comment.videoTime}}"
+          {{action "moveToVideoTime" comment.videoTime}}>
+          {{comment.videoTime}}
+        </span> - {{comment.relativeTime}}
+           </p>
+           {{#if (equal comment.username currentUsername)}}
+             <div class="comment-actions">
+               <button {{action "editComment" comment}}>Edit</button>
+               <button {{action "deleteComment" comment}}>Delete</button>
+             </div>
+           {{/if}}
+         </li>
+       {{/each}}
      </div>
-   </div>
 
 
    </div>
 
-   </div>
+ </div>
+
+  </div>

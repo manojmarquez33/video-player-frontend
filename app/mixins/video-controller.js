@@ -112,6 +112,7 @@ export default Ember.Mixin.create({
       video.currentTime = Math.min(video.duration, video.currentTime + 5);
     },
 
+
     fastForward() {
       let video = this.get('videoElement');
       clearInterval(this.intervalRewind);
@@ -126,15 +127,19 @@ export default Ember.Mixin.create({
 
     fastRewind() {
       let video = this.get('videoElement');
-      video.pause();
+      const circleLoader = document.getElementById('circleLoader');
+      circleLoader.classList.add('hidden');
+
       clearInterval(this.intervalRewind);
       clearInterval(this.intervalForward);
 
       let speed = this.get('selectedSpeed') || 2;
-      const fps = 60;
+      video.playbackRate = speed;
+      const fps = 20;
 
       this.intervalRewind = setInterval(() => {
         if (video.currentTime <= 0) {
+
           clearInterval(this.intervalRewind);
           video.currentTime = 0;
           video.pause();
@@ -144,6 +149,7 @@ export default Ember.Mixin.create({
         }
       }, 1000 / fps);
     },
+
 
     stopVideo() {
       let video = this.get('videoElement');
@@ -260,42 +266,59 @@ export default Ember.Mixin.create({
     },
 
     downloadFrame() {
-      let video = this.get('videoElement');
+      let video = document.getElementById("videoPlayer");
+      let comments = document.querySelectorAll(".bullet-comment");
 
       let curZoom = this.get('curZoom') || 1;
       let moveX = this.get('moveX') || 0;
       let moveY = this.get('moveY') || 0;
 
-
       let canvas = document.createElement('canvas');
       let ctx = canvas.getContext('2d');
-
 
       let canvasWidth = video.videoWidth * curZoom + Math.abs(moveX);
       let canvasHeight = video.videoHeight * curZoom + Math.abs(moveY);
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
 
-
       ctx.translate(moveX, moveY);
       ctx.scale(curZoom, curZoom);
-
-
       ctx.filter = getComputedStyle(video).filter;
-
-
       ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
+      comments.forEach(comment => {
+
+        let style = getComputedStyle(comment);
+
+          let x = parseFloat(style.left);
+          let y = parseFloat(style.top);
+          let width = comment.offsetWidth;
+          let height = comment.offsetHeight;
+
+        ctx.fillStyle = style.backgroundColor;
+          ctx.globalAlpha = parseFloat(style.opacity);
+          ctx.fillRect(x, y, width, height);
+
+        ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        ctx.fillStyle = style.color;
+        ctx.globalAlpha = 1;
+        ctx.textBaseline = "top";
+        ctx.fillText(comment.textContent, x + 5, y + 5);
+      });
+
+      ctx.globalAlpha = 1;
 
       canvas.toBlob((blob) => {
         let url = URL.createObjectURL(blob);
         let link = document.createElement('a');
         link.href = url;
-        link.download = 'frame.png';
+        link.download = 'Image_ZoTube.png';
         link.click();
         URL.revokeObjectURL(url);
       }, 'image/png');
     },
+
+
 
     seekVideo(value) {
       let videoElement = this.get('videoElement');

@@ -30,42 +30,222 @@ export default Ember.Controller.extend(
     init() {
       this._super(...arguments);
 
+      this.laneCount = 10;
+      this.activeLanes = new Array(this.laneCount).fill(false);
+
+      this.activeBulletComments = [];
+      this.lastAnimeTime = null;
+      this.lastSec = null;
+      this.triggeredComments = {};
+
+
       let sessionService = this.get('session');
 
-      sessionService.fetchUsernameFromSession().then((username) => {
-        console.log("Logged-in username:", username);
-
-        if (!username) {
-          console.error("Missing username! Cannot fetch like status.");
-          return;
-        }
-
-        this.set("currentUsername", username);
-        this.fetchLikeStatus();
-      }).catch((error) => {
-        console.error("Session error:", error);
-      });
+      sessionService.fetchUsernameFromSession()
+        .then((username) => {
+          console.log("Logged-in username:", username);
+          if (!username) {
+            console.error("Missing username! Cannot fetch like status.");
+            return;
+          }
+          this.set("currentUsername", username);
+          this.fetchLikeStatus();
+        })
+        .catch((error) => {
+          console.error("Session error:", error);
+        });
 
       Ember.run.scheduleOnce('afterRender', this, function () {
         this.setupVideoPlayer();
         this.setupVideoDuration();
+        this.setUpCommentMove();
+
         Ember.$('.comments-section').on('click', '.timestamp', (event) => {
           this.send('handleTimeClick', event);
         });
+
+        requestAnimationFrame(this.animateBulletComments.bind(this));
+
+        this.commentInterval = setInterval(() => {
+          this.showComments();
+        }, 100);
       });
     },
 
     modelObserver: Ember.observer('model', function () {
       let fileName = this.get('model.fileName');
-
       if (!fileName || fileName.trim() === "null") {
         console.warn("Skipping like status fetch: Invalid file name.");
         return;
       }
-
-      //this.fetchLikeStatus();
-      // this.fetchComments();
     }),
+
+    setUpCommentMove() {
+      const videoElement = document.getElementById("videoPlayer");
+      if (!videoElement) {
+        console.error("Video player not found.");
+        return;
+      }
+
+      videoElement.addEventListener("loadeddata", () => {
+        this.send("viewComments");
+      });
+
+      videoElement.addEventListener("pause", () => {
+        const bullets = document.querySelectorAll(".bullet-comment");
+        bullets.forEach(bullet => {
+          bullet.style.animationPlayState = "paused";
+        });
+      });
+
+      videoElement.addEventListener("play", () => {
+        const bullets = document.querySelectorAll(".bullet-comment");
+        bullets.forEach(bullet => {
+          bullet.style.animationPlayState = "running";
+        });
+        this.previousTime = Math.floor(videoElement.currentTime);
+      });
+    },
+
+
+    showComments() {
+      const videoElement = document.getElementById("videoPlayer");
+      if (!videoElement) { return; }
+
+      const currentSec = Math.floor(videoElement.currentTime);
+
+      if (this.lastSec === undefined || this.lastSec !== currentSec) {
+        this.triggeredComments = {};
+        this.lastSec = currentSec;
+      }
+
+      const videoContainer = document.querySelector(".video-container");
+      if (!videoContainer) { return; }
+
+      const containerWidth = videoContainer.offsetWidth;
+
+      const comments = this.get("comments") || [];
+
+      comments.forEach(comment => {
+        const timeParts = comment.videoTime.split(":").map(Number);
+
+        let commentSec;
+
+        if (timeParts.length === 3) {
+          commentSec = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+        } else {
+          commentSec = timeParts[0] * 60 + timeParts[1];
+        }
+
+        const key = commentSec + "_" + comment.username + "_" + comment.commentText;
+
+        if (commentSec === currentSec && !this.triggeredComments[key]) {
+          this.triggeredComments[key] = true;
+
+          const bullet = document.createElement("div");
+
+          bullet.className = "bullet-comment";
+          bullet.textContent = `@${comment.username}: ${comment.commentText}`;
+          bullet.style.position = "absolute";
+
+          videoContainer.appendChild(bullet);
+          const bulletWidth = bullet.offsetWidth;
+
+          bullet.style.transform = `translateX(${containerWidth}px)`;
+
+          const laneInfo = this.getAvailableLane();
+          bullet.style.top = laneInfo.top + "px";
+
+          const bulletObj = {
+            el: bullet,
+            bulletWidth: bulletWidth,
+            currentX: containerWidth,
+            baseSpeed: 200
+          };
+
+          this.activeBulletComments.push(bulletObj);
+        }
+      });
+    },
+
+
+    animateBulletComments(timestamp) {
+      if (!this.lastAnimeTime) {
+        this.lastAnimeTime = timestamp;
+      }
+      let dt = timestamp - this.lastAnimeTime;
+      this.lastAnimeTime = timestamp;
+
+      const videoElement = document.getElementById("videoPlayer");
+
+      if (videoElement && videoElement.paused) {
+        dt = 0;
+      }
+
+      if (this.isRewind) {
+        dt = 0;
+        const loader = document.querySelector('.circleLoader');
+        if (loader) {
+          loader.style.display = 'none';
+        }
+      }
+
+      const playbackRate = videoElement ? videoElement.playbackRate : 1;
+
+
+      this.activeBulletComments = this.activeBulletComments.filter((bullet) => {
+        bullet.currentX -= bullet.baseSpeed * playbackRate * (dt / 1000);
+        bullet.el.style.transform = `translateX(${bullet.currentX}px)`;
+        if (bullet.currentX < -bullet.bulletWidth) {
+          bullet.el.remove();
+          return false;
+        }
+        return true;
+      });
+
+      requestAnimationFrame(this.animateBulletComments.bind(this));
+    },
+
+
+
+    getAvailableLane() {
+      const container = document.querySelector(".video-container");
+      const containerHeight = container ? container.offsetHeight : 400;
+      const effectiveHeight = containerHeight * 0.3;
+      const laneHeight = effectiveHeight / this.laneCount;
+
+      const availableLanes = [];
+      for (let i = 0; i < this.laneCount; i++) {
+        if (!this.activeLanes[i]) {
+          availableLanes.push(i);
+        }
+      }
+
+      let chosenLane;
+      if (availableLanes.length > 0) {
+        chosenLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+        this.activeLanes[chosenLane] = true;
+        setTimeout(() => {
+          this.activeLanes[chosenLane] = false;
+        }, 5000);
+      } else {
+        chosenLane = Math.floor(Math.random() * this.laneCount);
+      }
+
+      const top = chosenLane * laneHeight;
+      return { laneIndex: chosenLane, top: top };
+    },
+
+
+    startCommentMove() {
+      const videoElement = document.getElementById("videoPlayer");
+      if (!videoElement) { return; }
+      clearInterval(this.commentInterval);
+      this.commentInterval = setInterval(() => {
+        this.showComments();
+      }, 100);
+    },
+
 
 
     fetchLikeStatus() {
@@ -268,6 +448,15 @@ export default Ember.Controller.extend(
           return;
         }
 
+        let newComment = {
+          commentId: Date.now(),
+          userId: this.get('currentUserId'),
+          username: username,
+          commentText: commentText,
+          videoTime: formattedTime,
+          relativeTime: "just now"
+        };
+
         Ember.$.ajax({
           url: AppConfig.CommentServlet_API_URL,
           type: "POST",
@@ -277,17 +466,23 @@ export default Ember.Controller.extend(
             username: username,
             comment: commentText,
             videoTime: formattedTime
-
           }),
-
 
           success: () => {
             this.set('commentStatusMessage', 'Comment posted successfully!');
             $("#commentText").val('');
+
+            let comments = this.get('comments');
+            comments.pushObject(newComment);
+            this.notifyPropertyChange('comments');
+
+            this.showComments(Math.floor(currentTime));
+
             Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
             }, 3000);
           },
+
           error: (jqXHR, textStatus, errorThrown) => {
             console.error("Failed to post comment", {
               status: jqXHR.status,
@@ -295,6 +490,7 @@ export default Ember.Controller.extend(
               error: errorThrown,
               response: jqXHR.responseText
             });
+
             this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
             Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
@@ -302,6 +498,7 @@ export default Ember.Controller.extend(
           }
         });
       },
+
 
 
       viewComments() {
@@ -314,18 +511,14 @@ export default Ember.Controller.extend(
           success: (data) => {
             console.log("Fetched comments:", data);
 
-            this.set('comments', []);
-
-            let processedComments = data.map(comment => {
-              return {
-                commentId: comment.comment_id,
-                userId: comment.user_id,
-                commentText: comment.comment_text,
-                videoTime: comment.video_time,
-                username: comment.username,
-                relativeTime: this.formatRelativeTime(new Date(comment.created_at))
-              };
-            });
+            let processedComments = data.map(comment => ({
+              commentId: comment.comment_id,
+              userId: comment.user_id,
+              commentText: comment.comment_text,
+              videoTime: comment.video_time,
+              username: comment.username,
+              relativeTime: this.formatRelativeTime(new Date(comment.created_at))
+            }));
 
             this.set('comments', processedComments);
           },
@@ -335,6 +528,7 @@ export default Ember.Controller.extend(
           }
         });
       },
+
 
 
       editComment(comment) {
