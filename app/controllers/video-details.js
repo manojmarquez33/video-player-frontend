@@ -237,14 +237,7 @@ export default Ember.Controller.extend(
     },
 
 
-    startCommentMove() {
-      const videoElement = document.getElementById("videoPlayer");
-      if (!videoElement) { return; }
-      clearInterval(this.commentInterval);
-      this.commentInterval = setInterval(() => {
-        this.showComments();
-      }, 100);
-    },
+
 
 
 
@@ -312,6 +305,50 @@ export default Ember.Controller.extend(
           let newStatus = isLiked ? 0 : 1;
           this.send('updateLikeStatus', newStatus);
         },
+
+      confirmDislike() {
+        document.getElementById("dislikeModal").classList.remove("hidden");
+      },
+
+      closeDislikeModal() {
+        document.getElementById("dislikeModal").classList.add("hidden");
+      },
+
+      handleDislike(removeFromFuture) {
+        let mediaId = this.get('model.id');
+        let username = this.get('session.user');
+
+        if (!mediaId || !username) {
+          console.error("Missing mediaId or username.");
+          return;
+        }
+
+        console.log(`User chose to ${removeFromFuture ? "remove similar videos" : "dislike only this video"}`);
+
+        Ember.$.ajax({
+          url: `${AppConfig.VideoServlet_API_URL}`,
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            mediaId,
+            username,
+            likeStatus: -1,
+            removeRecommendation: removeFromFuture
+          }),
+          success: (response) => {
+            console.log("Dislike action recorded successfully:", response);
+            this.set('isLiked', false);
+            this.set('isDisliked', true);
+            this.set('dislikeCount', (this.get('dislikeCount') || 0) + 1);
+            this.notifyPropertyChange('dislikeCount');
+          },
+          error: (jqXHR) => {
+            console.error("Error processing dislike:", jqXHR.responseText);
+          }
+        });
+
+        this.send("closeDislikeModal");
+      },
 
         dislikeVideo() {
           let isDisliked = this.get('isDisliked');

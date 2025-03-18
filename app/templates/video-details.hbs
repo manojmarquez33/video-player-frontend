@@ -90,9 +90,20 @@
              👍 Like <span class="count">({{likeCount}})</span>
            </button>
 
-           <button {{action "dislikeVideo"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">
+           <button {{action "confirmDislike"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">
              👎 Dislike <span class="count">({{dislikeCount}})</span>
            </button>
+
+           <!-- Dislike Confirmation Modal -->
+           <div id="dislikeModal" class="modal hidden">
+             <div class="modal-content">
+               <p>Do you not prefer these types of videos in the future or just dislike this video?</p>
+               <button {{action "handleDislike" true}}>Remove Similar Videos</button>
+               <button {{action "handleDislike" false}}>Dislike Only This Video</button>
+               <button {{action "closeDislikeModal"}}>Cancel</button>
+             </div>
+           </div>
+
          </div>
 
 
