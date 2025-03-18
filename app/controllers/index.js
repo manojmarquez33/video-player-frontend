@@ -4,53 +4,102 @@ import AppConfig from "../config/app-config";
 
 export default Ember.Controller.extend({
   searchQuery: '',
-
-  init() {
-    this._super(...arguments);
-    this.send('fetchAllVideos');
-  },
+  session: Ember.inject.service(),
 
   actions: {
+
     searchVideos() {
-      let query = this.get('searchQuery').trim();
+      let query = this.get("searchQuery").trim();
+      let sessionService = this.get("session");
 
       if (!query) {
         console.log("No search query, fetching all videos...");
-        this.send('fetchAllVideos');
+        this.send("fetchAllVideos");
         return;
       }
 
-      $.ajax({
-        url: `${AppConfig.VideoServlet_API_URL}?search=${encodeURIComponent(query)}`,
-        type: 'GET',
-        dataType: 'json',
-        success: (data) => {
-          console.log("Search results:", data);
-          this.set('model', data);
-        },
-        error: (err) => {
-          console.error("Search request failed", err);
-          this.set('model', []);
-        }
-      });
+      sessionService.fetchUsernameFromSession()
+        .then((username) => {
+          if (!username) {
+            console.error("Missing username! Redirecting to login.");
+            this.transitionToRoute("login");
+            return;
+          }
+
+          $.ajax({
+            url: `${AppConfig.VideoServlet_API_URL}?username=${encodeURIComponent(username)}&search=${encodeURIComponent(query)}`,
+            type: "GET",
+            dataType: "json",
+            success: (data) => {
+              console.log("Search results:", data);
+              this.set("model", data);
+
+              this.send("fetchThumbnails", data);
+            },
+            error: (err) => {
+              console.error("Search request failed", err);
+              this.set("model", []);
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Session error:", error);
+          this.transitionToRoute("login");
+        });
     },
 
     fetchAllVideos() {
-      console.log("Fetching all videos and playlists...");
-      $.ajax({
-        url: `${AppConfig.VideoServlet_API_URL}`,
-        type: "GET",
-        dataType: "json",
-        success: (data) => {
-          console.log("All videos loaded:", data);
-          this.set("model", data);
-        },
-        error: (err) => {
-          console.error("Failed to fetch videos", err);
-          this.set("model", []);
-        }
+      let sessionService = this.get("session");
+
+      sessionService.fetchUsernameFromSession()
+        .then((username) => {
+          console.log("Fetching videos for user:", username);
+
+          if (!username) {
+            console.error("Missing username! Redirecting to login.");
+            this.transitionToRoute("login");
+            return;
+          }
+
+          $.ajax({
+            url: `${AppConfig.VideoServlet_API_URL}?username=${encodeURIComponent(username)}`,
+            type: "GET",
+            dataType: "json",
+            success: (data) => {
+              console.log("All videos loaded:", data);
+              this.set("model", data);
+              this.send("fetchThumbnails", data);
+            },
+            error: (err) => {
+              console.error("Failed to fetch videos", err);
+              this.set("model", []);
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Session error:", error);
+          this.transitionToRoute("login");
+        });
+    },
+
+
+    fetchThumbnails(videos) {
+      videos.forEach(video => {
+        $.ajax({
+          url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(video.fileName)}`,
+          type: "GET",
+          dataType: "json",
+          success: (metadata) => {
+            Ember.set(video, "url", metadata.url);
+            this.notifyPropertyChange("model");
+          },
+          error: (err) => {
+            console.error(`Failed to fetch metadata for ${video.fileName}`, err);
+          }
+        });
       });
     }
+
 
   }
 });

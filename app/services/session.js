@@ -1,51 +1,51 @@
-  import Ember from 'ember';
+import Ember from 'ember';
 
-  export default Ember.Service.extend({
-    user: null,
+export default Ember.Service.extend({
+  user: null,
 
-    init() {
-      this._super();
-      this.fetchUsernameFromSession();
-    },
+  init() {
+    this._super();
+    this.fetchUsernameFromSession();
+  },
 
-    fetchUsernameFromSession() {
-      return new Ember.RSVP.Promise((resolve, reject) => {
-        Ember.$.ajax({
-          url: "http://localhost:8080/VideoPlayer_war_exploded/check-session",
-          method: "GET",
-          xhrFields: { withCredentials: true },
-        }).done(function (data) {
-          if (data.success && data.username) {
-            console.log("Session start for user:", data.username);
-            this.set("user", data.username);
-            resolve(data.username);
-          } else {
-            console.log("No session or no username.");
-            this.set("user", null);
-            reject("No valid session");
-          }
-        }.bind(this))
-          .fail(function () {
-            console.error("Error checking session.");
-            this.set("user", null);
-            reject("Session check failed");
-          }.bind(this));
-      });
-    },
+  fetchUsernameFromSession() {
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      Ember.$.ajax({
+        url: "http://localhost:8080/VideoPlayer_war_exploded/check-session",
+        method: "GET",
+        xhrFields: { withCredentials: true },
+      }).done(function (data) {
+        if (data.success && data.username) {
+          console.log("Session start for user:", data.username);
+          this.set("user", data.username);
+          resolve(data.username);
+        } else {
+          console.log("No session or no username.");
+          this.set("user", null);
+          reject("No valid session");
+        }
+      }.bind(this))
+        .fail(function () {
+          console.error("Error checking session.");
+          this.set("user", null);
+          reject("Session check failed");
+        }.bind(this));
+    });
+  },
 
-    getUsername() {
-      return this.get('user');
-    },
+  getUsername() {
+    return this.get('user');
+  },
 
-    logout() {
-      this.set("user", null);
-    }
-  });
-
-
+  logout() {
+    this.set("user", null);
+  }
+});
 
 
-  // import Ember from 'ember';
+
+
+// import Ember from 'ember';
   //
   // export default Ember.Service.extend({
   //   user: null,

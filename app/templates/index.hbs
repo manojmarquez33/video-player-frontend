@@ -1,28 +1,42 @@
-{{#if username}}
-        <span class="user-greeting">Welcome, {{username}}</span>
-      {{/if}}
-
 <header class="header">
+  <div class="header-left">
+    <img src="assets/images/video-player.png" alt="Logo" class="logo">
+    <span class="brand-title">ZoTube</span>
+  </div>
 
-  <img src="assets/images/video-player.png" alt="Logo" class="logo">
-  <span class="brand-title">ZoTube</span>
-
+  <div class="header-right">
+    {{#link-to "user" class="icon-button"}}
+      <img src="assets/images/user.png" alt="User" class="icon">
+    {{/link-to}}
+    {{#link-to "logout" class="icon-button"}}
+      <img src="assets/images/logout.png" alt="Logout" class="icon">
+    {{/link-to}}
+  </div>
 </header>
 
-{{#link-to "logout" class="logout-button"}}Logout{{/link-to}}
+
 <div class="search-container">
   {{input type="text" value=searchQuery placeholder="Search for videos..." class="search-bar" key-up=(action "searchVideos")}}
 </div>
 
+<h2 class="section-title">Recommended Videos</h2>
 <div class="video-container">
-  {{#if model.length}}
-    {{#each model as |video|}}
+  {{#if model.recommendedVideos.length}}
+    {{#each model.recommendedVideos as |video|}}
       {{video-item video=video}}
     {{/each}}
   {{else}}
-    <div class="no-results-container">
-      <img src="assets/images/no-result.png" width='150' height='150' class="no-results-image" alt="No Results">
-      <p class="no-results-text">No results found. 😑</p>
-    </div>
+    <p class="no-videos-text">No recommended videos available.</p>
+  {{/if}}
+</div>
+
+<h2 class="section-title">Other Videos</h2>
+<div class="video-container">
+  {{#if model.otherVideos.length}}
+    {{#each model.otherVideos as |video|}}
+      {{video-item video=video}}
+    {{/each}}
+  {{else}}
+    <p class="no-videos-text">No other videos available.</p>
   {{/if}}
 </div>

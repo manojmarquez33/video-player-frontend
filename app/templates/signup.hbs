@@ -28,7 +28,15 @@
         {{input type="password" value=confirmPassword placeholder="Confirm password"}}
       </div>
 
-      <button type="submit" class="auth-button">Sign Up</button>
+      <div class="input-group">
+        <p>{{selectedInterests}}</p>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="auth-button" {{action "openInterestModal"}}>Choose Your Interests</button>
+        <button type="submit" class="auth-button">Sign Up</button>
+      </div>
+
     </form>
 
     <p class="auth-footer">
@@ -36,3 +44,27 @@
     </p>
   </div>
 </div>
+
+{{#if showInterestModal}}
+  <div class="modal-overlay">
+    <div class="interest-modal">
+      <div class="modal-header">
+        <input type="text" class="search-box" placeholder="Search interests..." oninput={{action "filterInterests" value="target.value"}}>
+      </div>
+
+      <div class="modal-body">
+        <div class="interest-grid">
+          {{#each filteredInterests as |interest|}}
+            <div class="interest-item {{if (includes selectedInterestIds interest.id) 'selected' ''}}" {{action "toggleInterest" interest.id}}>
+              {{interest.interest_name}}
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="ok-button" {{action "closeInterestModal"}}>OK</button>
+      </div>
+    </div>
+  </div>
+{{/if}}

@@ -1,97 +1,74 @@
-
 import Ember from 'ember';
 
 export default Ember.Route.extend({
   session: Ember.inject.service(),
 
   beforeModel() {
-    return this.get('session').fetchUsernameFromSession().then(function (username) {
-      if (!username) {
-        alert("You are not logged in.");
+    return this.get("session").fetchUsernameFromSession()
+      .then(username => {
+        console.log("Username from session service:", username);
+        if (!username) {
+          alert("You are not logged in.");
+          this.transitionTo("login");
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching session username:", error);
+        alert("Session error. Please log in again.");
         this.transitionTo("login");
-      }
-    }.bind(this))
-      .catch(function () {
-        alert("You are not logged in.");
-        this.transitionTo("login");
-      }.bind(this));
+      });
   },
 
-  model: function () {
-    return Ember.$.getJSON("http://localhost:8080/VideoPlayer_war_exploded/VideoServlet");
+  model() {
+    let sessionService = this.get("session");
+
+    return sessionService.fetchUsernameFromSession()
+      .then((username) => {
+        console.log("Logged-in username:", username);
+
+        if (!username) {
+          console.error("Missing username! Redirecting to login.");
+          this.transitionTo("login");
+          return {};
+        }
+
+        let url = `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?username=${encodeURIComponent(username)}`;
+        console.log("Fetching videos from:", url);
+
+        return Ember.$.getJSON(url)
+          .then(response => {
+            console.log("Fetched response:", response);
+
+            if (!response || !Array.isArray(response.recommendedVideos) || !Array.isArray(response.otherVideos)) {
+              throw new Error("Invalid JSON format");
+            }
+
+            let userInterests = response.userInterests || [];
+            console.log("User interests from backend:", userInterests);
+            sessionService.set("userInterests", userInterests);
+
+            return {
+              recommendedVideos: response.recommendedVideos,
+              otherVideos: response.otherVideos,
+            };
+          })
+          .fail(error => {
+            console.error("Error fetching videos:", error);
+            alert("Failed to fetch videos. Please try again.");
+            return { recommendedVideos: [], otherVideos: [] };
+          });
+
+      })
+      .catch((error) => {
+        console.error("Session error:", error);
+        alert("Session issue. Please log in again.");
+        this.transitionTo("login");
+      });
   }
+
+
+
+
 });
 
 
-
-
-// import Ember from 'ember';
-//
-// export default Ember.Route.extend({
-//   session: Ember.inject.service(),
-//
-//   beforeModel() {
-//     let self = this;
-//
-//     return this.get('session').fetchUsernameFromSession().then((username) => {
-//       if (!username) {
-//         alert("You are not logged in.");
-//         self.transitionTo("login");
-//       }
-//     }).catch(() => {
-//       alert("You are not logged in.");
-//       self.transitionTo("login");
-//     });
-//   },
-//
-//   // beforeModel: function () {
-//   //   var self = this;
-//   //
-//   //   return Ember.$.ajax({
-//   //     url: "http://localhost:8080/VideoPlayer_war_exploded/check-session",
-//   //     method: "GET",
-//   //     xhrFields: {
-//   //       withCredentials: true
-//   //     }
-//   //   }).done(function (data) {
-//   //     if (!data.success) {
-//   //       alert("You are not logged in.");
-//   //       self.set("user", data.username);
-//   //       self.transitionTo("login");
-//   //     } else {
-//   //       console.log("User authenticated:", data.username);
-//   //     }
-//   //   }).fail(function () {
-//   //     alert("Error verifying session.");
-//   //     self.transitionTo("login");
-//   //   });
-//   // },
-//
-//   model: function () {
-//     return Ember.$.getJSON("http://localhost:8080/VideoPlayer_war_exploded/VideoServlet");
-//   }
-// });
-
-
-
-
-
-// import Ember from 'ember';
-  //
-  // export default Ember.Route.extend({
-  //   session: Ember.inject.service(),
-  //
-  //   beforeModel() {
-  //     let sessionId = this.get('session').getCookie("sessionId");
-  //     //let username = this.get('session').getCookie("username");
-  //
-  //     if (!sessionId) {
-  //         alert('You are not logged in.');
-  //       this.transitionTo('login');
-  //     }
-  //   },
-  //
-  //   model() {
-  //     return Ember.$.getJSON('http://localhost:8080/VideoPlayer_war_exploded/VideoServlet');
-  //   }
-  // });

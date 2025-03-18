@@ -14,6 +14,7 @@ Router.map(function() {
   this.route('logout');
 
   this.route('index', { path: '/' });
+  this.route('user');
 });
 
 export default Router;

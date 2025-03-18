@@ -24,6 +24,12 @@ body {
   text-align: center;
 }
 
+
+
+
+
+
+
 /* Logo */
 .auth-logo {
   width: 80px;
@@ -34,6 +40,19 @@ body {
 .auth-title {
   color: #333;
   margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin: 25px 0;
+  padding: 10px;
+  background: linear-gradient(to right, #007bff, #0056b3);
+  color: white;
+  border-radius: 8px;
+  display: inline-block;
+  width: 100%;
 }
 
 /* Input Group */
@@ -107,11 +126,57 @@ h1 {
 
 .header {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 5px;
+  position: relative;
   margin-bottom: 20px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 10px; /* Space between logo and title */
+}
+
+/* Ensuring the icons remain on the right */
+.header-right {
+  display: flex;
+  gap: 15px;
+  margin-left: auto;
+}
+
+
+.right-text {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s;
+}
+
+.icon-button:hover .icon {
+  transform: scale(1.1);
+}
 .tab-buttons {
   display: flex;
   justify-content: center;
@@ -232,4 +297,118 @@ h1 {
   vertical-align: middle;
   margin-right: 10px;
 }
+
+/*------------------------*/
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal Window */
+.interest-modal {
+  background: #f0f0f0;
+  width: 50%;
+  max-width: 600px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Search Bar */
+.search-box {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+/* Scrollable Interest Grid */
+.modal-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Interest Selection Grid */
+.interest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+/* Interest Item */
+.interest-item {
+  padding: 10px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.3s ease-in-out;
+}
+
+/* Selected Interest */
+.interest-item.selected {
+  background: #007bff;
+  color: white;
+}
+
+/* Modal Footer */
+.modal-footer {
+  margin-top: 15px;
+}
+
+/* Buttons */
+.ok-button,
+.auth-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.ok-button:hover,
+.auth-button:hover {
+  background: #0056b3;
+}
+
+/* Button Group - Ensures buttons are stacked with spacing */
+.button-group {
+  display: flex;
+  flex-direction: column; /* Stacks buttons vertically */
+  gap: 15px; /* Adds space between buttons */
+  align-items: center; /* Centers the buttons */
+  width: 100%;
+  margin-top: 10px/* Ensures buttons take full width of the container */
+}
+
+/* Style for buttons */
+.auth-button {
+  width: 80%; /* Adjust width as needed */
+  padding: 12px;
+  background-color: #007bff; /* Blue color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Add hover effect */
+.auth-button:hover {
+  background-color: #0056b3;
+}
+
 

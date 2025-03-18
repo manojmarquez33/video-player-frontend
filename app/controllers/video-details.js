@@ -48,7 +48,7 @@ export default Ember.Controller.extend(
             console.error("Missing username! Cannot fetch like status.");
             return;
           }
-          this.set("currentUsername", username);
+
           this.fetchLikeStatus();
         })
         .catch((error) => {
@@ -250,7 +250,7 @@ export default Ember.Controller.extend(
 
     fetchLikeStatus() {
       let mediaId = this.get('model.id');
-      let username = this.get('session.user');
+        let username = this.get('session.user');
 
       console.log("media :"+mediaId +" "+"username:"+username);
       if (!mediaId || !username) {

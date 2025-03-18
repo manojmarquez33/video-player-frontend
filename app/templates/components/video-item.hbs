@@ -2,7 +2,8 @@
   {{#if (equal video.type "video")}}
     {{#link-to "video-details" video.fileName}}
       <video class="thumbnail" preload="metadata" crossorigin="anonymous">
-        <source src="{{video.url}}#t=0.1" type="video/mp4">
+        <source src="{{video.url}}" type="video/mp4">
+        <h1>{{video.url}}</h1>
       </video>
     {{/link-to}}
   {{else if (equal video.type "playlist")}}
