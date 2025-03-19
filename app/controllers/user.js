@@ -286,8 +286,18 @@ export default Ember.Controller.extend({
       url: "http://localhost:8080/VideoPlayer_war_exploded/interests",
       type: "GET",
       success: (data) => {
-        this.set("allInterests", data);
-        this.set("filteredInterests", data);
+        let uniqueInterests = [];
+        let seen = new Set();
+
+        data.forEach((interest) => {
+          if (!seen.has(interest.interest_name)) {
+            seen.add(interest.interest_name);
+            uniqueInterests.push(interest);
+          }
+        });
+
+        this.set("allInterests", uniqueInterests);
+        this.set("filteredInterests", uniqueInterests);
       },
       error: () => {
         alert("Failed to fetch interests.");
