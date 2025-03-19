@@ -237,10 +237,6 @@ export default Ember.Controller.extend(
     },
 
 
-
-
-
-
     fetchLikeStatus() {
       let mediaId = this.get('model.id');
         let username = this.get('session.user');

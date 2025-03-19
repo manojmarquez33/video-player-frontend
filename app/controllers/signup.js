@@ -45,12 +45,13 @@ export default Ember.Controller.extend({
 
     registerUser() {
       let username = this.get("username");
+      let fullname = this.get("fullname");
       let email = this.get("email");
       let password = this.get("password");
       let confirmPassword = this.get("confirmPassword");
       let interestIds = this.get("selectedInterestIds");
 
-      if (!username || !email || !password || !confirmPassword) {
+      if (!username ||!fullname || !email || !password || !confirmPassword) {
         this.set("errorMessage", "All fields are required.");
         return;
       }
@@ -64,7 +65,7 @@ export default Ember.Controller.extend({
         url: "http://localhost:8080/VideoPlayer_war_exploded/signup",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify({ username, email, password, interestIds }),
+        data: JSON.stringify({ username,fullname,email, password, interestIds }),
         success: () => {
           alert("Registration successful! Please log in.");
           this.transitionToRoute("login");

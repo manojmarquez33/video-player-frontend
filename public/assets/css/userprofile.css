@@ -1,0 +1,322 @@
+/* General Styles */
+body {
+  background-color: #f8f9fa;
+  color: #333;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Profile Container */
+.user-profile-container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.profile-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #007bff;
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info h2 {
+  font-size: 22px;
+  margin: 5px 0;
+}
+
+.username {
+  color: #555;
+}
+
+.email {
+  font-size: 14px;
+  color: #888;
+}
+
+/* Profile Actions */
+.profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Profile Picture */
+.profile-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #007bff;
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.profile-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-body {
+  margin-top: 15px;
+}
+
+.modal-body label {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.save-button, .cancel-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+  font-size: 14px;
+}
+
+.save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #ccc;
+}
+
+
+.customize-btn, .manage-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.customize-btn:hover, .manage-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Tabs Container */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+}
+
+/* Tab Button */
+.tab-button {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  margin: 0 10px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+  font-weight: bold;
+  position: relative;
+  transition: color 0.3s ease-in-out;
+}
+
+/* Active Tab */
+.tab-button.active-tab {
+  color: #007bff; /* Blue color for active tab */
+}
+
+/* Underline Indicator for Active Tab */
+.tab-button.active-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 3px;
+  background-color: #007bff;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.tab-button:hover {
+  color: #007bff;
+}
+
+/* Video List Grid */
+.video-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 10px;
+  /* Centers videos when fewer than grid size */
+}
+
+/* Video Card */
+.video-item {
+  width: 260px; /* Fixed width */
+  height: 290px; /* Fixed height */
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Distribute space */
+}
+
+/* Thumbnail Styling */
+.video-item video {
+  width: 100%;
+  height: 180px; /* Fixed height for uniform thumbnails */
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Video Details */
+.video-details {
+  padding: 10px;
+  text-align: center;
+}
+
+.video-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin: 5px 0;
+  text-decoration: none;
+  //* remove underline from link give me css */
+}
+
+.video-size, .video-date {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Upload Section */
+.upload-section {
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Input Fields */
+.upload-input {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.upload-input label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.upload-input input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  background: #f8f8f8;
+}
+
+.upload-input input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Upload Button */
+.upload-btn {
+  width: 100%;
+  background: linear-gradient(to right, #007bff, #0056b3);
+  border: none;
+  padding: 12px;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(to right, #0056b3, #003f80);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .upload-section {
+    width: 90%;
+  }
+}
+

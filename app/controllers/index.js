@@ -34,7 +34,7 @@ export default Ember.Controller.extend({
               console.log("Search results:", data);
               this.set("model", data);
 
-              this.send("fetchThumbnails", data);
+              //this.send("fetchThumbnails", data);
             },
             error: (err) => {
               console.error("Search request failed", err);
@@ -68,7 +68,7 @@ export default Ember.Controller.extend({
             success: (data) => {
               console.log("All videos loaded:", data);
               this.set("model", data);
-              this.send("fetchThumbnails", data);
+              //this.send("fetchThumbnails", data);
             },
             error: (err) => {
               console.error("Failed to fetch videos", err);
@@ -83,22 +83,22 @@ export default Ember.Controller.extend({
     },
 
 
-    fetchThumbnails(videos) {
-      videos.forEach(video => {
-        $.ajax({
-          url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(video.fileName)}`,
-          type: "GET",
-          dataType: "json",
-          success: (metadata) => {
-            Ember.set(video, "url", metadata.url);
-            this.notifyPropertyChange("model");
-          },
-          error: (err) => {
-            console.error(`Failed to fetch metadata for ${video.fileName}`, err);
-          }
-        });
-      });
-    }
+    // fetchThumbnails(videos) {
+    //   videos.forEach(video => {
+    //     $.ajax({
+    //       url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(video.fileName)}`,
+    //       type: "GET",
+    //       dataType: "json",
+    //       success: (metadata) => {
+    //         Ember.set(video, "url", metadata.url);
+    //         this.notifyPropertyChange("model");
+    //       },
+    //       error: (err) => {
+    //         console.error(`Failed to fetch metadata for ${video.fileName}`, err);
+    //       }
+    //     });
+    //   });
+    // }
 
 
   }
