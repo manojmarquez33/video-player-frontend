@@ -12,7 +12,7 @@ export default Ember.Mixin.create({
     console.log("Model received in loadPlaylist:", model);
 
     if (!model || !Array.isArray(model.videoList) || model.videoList.length === 0) {
-      console.error("❌ Missing or empty playlist data.");
+      console.error("Missing or empty playlist data.");
       return;
     }
 

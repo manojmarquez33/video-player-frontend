@@ -1,4 +1,4 @@
-// video-playlist.js
+
 import Ember from 'ember';
 import VideoInitializer from '../mixins/video-initializer';
 import VideoController from '../mixins/video-controller';
@@ -328,6 +328,7 @@ export default Ember.Controller.extend(
     },
 
     actions: {
+
       likeVideo() {
         let isLiked = this.get('isLiked');
         let newStatus = isLiked ? 0 : 1;
@@ -344,12 +345,13 @@ export default Ember.Controller.extend(
         let mediaId = this.get('model.id');
         let username = this.get('session.user');
 
-
         if (!mediaId || !username) {
           console.error("Missing mediaId or username.");
           return;
         }
+
         console.log("Updating like status:", { mediaId, username, status });
+
         Ember.$.ajax({
           url: `${AppConfig.VideoServlet_API_URL}`,
           type: "POST",
@@ -359,9 +361,9 @@ export default Ember.Controller.extend(
             console.log("Like status updated successfully:", response);
 
             let alreadyLiked = this.get('isLiked');
-            let alreadyDisLiked = this.get('isDisliked');
+            let alreadyDisliked = this.get('isDisliked');
 
-            if (status === 1) {
+            if (status === 1) {  // User liked
               this.set('isLiked', true);
               this.set('isDisliked', false);
 
@@ -369,7 +371,7 @@ export default Ember.Controller.extend(
                 this.set('likeCount', (this.get('likeCount') || 0) + 1);
               }
 
-              if (alreadyDisLiked) {
+              if (alreadyDisliked) {
                 this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
               }
             }
@@ -377,7 +379,7 @@ export default Ember.Controller.extend(
               this.set('isLiked', false);
               this.set('isDisliked', true);
 
-              if (!alreadyDisLiked) {
+              if (!alreadyDisliked) {
                 this.set('dislikeCount', (this.get('dislikeCount') || 0) + 1);
               }
 
@@ -389,12 +391,14 @@ export default Ember.Controller.extend(
               if (alreadyLiked) {
                 this.set('likeCount', Math.max((this.get('likeCount') || 0) - 1, 0));
               }
-              if (alreadyDisLiked) {
+              if (alreadyDisliked) {
                 this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
               }
+
               this.set('isLiked', false);
               this.set('isDisliked', false);
             }
+
             this.notifyPropertyChange('likeCount');
             this.notifyPropertyChange('dislikeCount');
           },
@@ -403,6 +407,7 @@ export default Ember.Controller.extend(
           }
         });
       },
+
 
       handleTimeClick(event) {
         let clickedElement = event && event.target;

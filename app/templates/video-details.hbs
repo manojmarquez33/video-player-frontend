@@ -3,7 +3,6 @@
 <a href="/" class="back-button">&#8592; Back</a>
 
 
-
 <div class="container">
 
   <div class="left-section">
@@ -73,110 +72,98 @@
       </div>
     </div>
 
-<div class="video-details">
-  <h2 class="video-title">{{model.fileName}}</h2>
-  <p><strong>Size:</strong> {{model.size}}</p>
-  <p><strong>Duration:</strong> <span id="videoDuration"></span></p>
-</div>
+    <div class="video-details">
+      <h2 class="video-title">{{model.fileName}}</h2>
+      <p><strong>Size:</strong> {{model.size}}</p>
+      <p><strong>Duration:</strong> <span id="videoDuration"></span></p>
+    </div>
 
 
   </div>
 
   <div class="right-section">
-      <div class="button-controls">
+    <h3>Views count:{{viewCount}}</h3>
+    <div class="button-controls">
 
-         <div class="group">
-           <button {{action "likeVideo"}} class="like-dislike-btn like-btn {{if isLiked 'liked'}}">
-             👍 Like <span class="count">({{likeCount}})</span>
-           </button>
+      <div class="group">
+        <button {{action "likeVideo"}} class="like-dislike-btn like-btn {{if isLiked 'liked'}}">
+          👍 Like <span class="count">({{likeCount}})</span>
+        </button>
 
-           <button {{action "confirmDislike"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">
-             👎 Dislike <span class="count">({{dislikeCount}})</span>
-           </button>
+        <button {{action "dislikeVideo"}} class="like-dislike-btn dislike-btn {{if isDisliked 'disliked'}}">
+          👎 Dislike <span class="count">({{dislikeCount}})</span>
+        </button>
+      </div>
 
-           <!-- Dislike Confirmation Modal -->
-           <div id="dislikeModal" class="modal hidden">
-             <div class="modal-content">
-               <p>Do you not prefer these types of videos in the future or just dislike this video?</p>
-               <button {{action "handleDislike" true}}>Remove Similar Videos</button>
-               <button {{action "handleDislike" false}}>Dislike Only This Video</button>
-               <button {{action "closeDislikeModal"}}>Cancel</button>
-             </div>
-           </div>
+      <div class="skip-control">
+        <label for="skipInput">Skip</label>
+        <input type="number" id="skipInput" placeholder="Enter seconds"/>
+        <button {{action "skipToSec"}}>Skip</button>
+      </div>
+      <div class="group">
+        <button {{action "downloadFrame"}}>Download Frame</button>
+        <button {{action "convertBlackAndWhite"}}>Black & White</button>
+      </div>
+      <div class="subtitle-controls">
+        <label for="subtitleToggle">Subtitle :</label>
+        <select id="subtitleToggle">
+          <option value="on">On</option>
+          <option value="off" selected>Off</option>
+        </select>
+      </div>
+    </div>
 
-         </div>
 
+    <div class="comment-section">
+      <h3>Comments</h3>
 
-
-        <div class="skip-control">
-          <label for="skipInput">Skip</label>
-          <input type="number" id="skipInput" placeholder="Enter seconds" />
-          <button {{action "skipToSec"}}>Skip</button>
-        </div>
-        <div class="group">
-          <button {{action "downloadFrame"}}>Download Frame</button>
-          <button {{action "convertBlackAndWhite"}}>Black & White</button>
-        </div>
-        <div class="subtitle-controls">
-          <label for="subtitleToggle">Subtitle :</label>
-          <select id="subtitleToggle">
-            <option value="on">On</option>
-            <option value="off" selected>Off</option>
-          </select>
+      <div class="new-comment">
+        <textarea id="commentText" placeholder="Add a comment..." rows="3"></textarea>
+        <div class="comment-buttons">
+          <button {{action "postComment"}}>Post Comment</button>
+          <button {{action "viewComments"}}>View Comments</button>
         </div>
       </div>
 
-
-<div class="comment-section">
-  <h3>Comments</h3>
-
-  <div class="new-comment">
-    <textarea id="commentText" placeholder="Add a comment..." rows="3"></textarea>
-    <div class="comment-buttons">
-      <button {{action "postComment"}}>Post Comment</button>
-      <button {{action "viewComments"}}>View Comments</button>
-    </div>
-  </div>
-
-  {{#if commentStatusMessage}}
-    <div class="comment-status">{{commentStatusMessage}}</div>
-  {{/if}}
+      {{#if commentStatusMessage}}
+        <div class="comment-status">{{commentStatusMessage}}</div>
+      {{/if}}
 
 
-  <div class="comments-section">
-    {{#each comments as |comment|}}
-      <li class="comment-item">
-        <p class="comment-user">
-          {{#if (equal comment.username currentUsername)}}
-            posted by you
-          {{else}}
-            @{{comment.username}}
-          {{/if}}
-        </p>
-        <p class="comment-text" data-comment-id="{{comment.commentId}}">
-          {{detect-time comment.commentText}}
-        </p>
-        <p class="comment-time">
+      <div class="comments-section">
+        {{#each comments as |comment|}}
+          <li class="comment-item">
+            <p class="comment-user">
+              {{#if (equal comment.username currentUsername)}}
+                posted by you
+              {{else}}
+                @{{comment.username}}
+              {{/if}}
+            </p>
+            <p class="comment-text" data-comment-id="{{comment.commentId}}">
+              {{detect-time comment.commentText}}
+            </p>
+            <p class="comment-time">
         <span class="video-time"
               style="color: blue; text-decoration: underline; cursor: pointer;"
               data-time="{{comment.videoTime}}"
           {{action "moveToVideoTime" comment.videoTime}}>
           {{comment.videoTime}}
         </span> - {{comment.relativeTime}}
-        </p>
-        {{#if (equal comment.username currentUsername)}}
-          <div class="comment-actions">
-            <button {{action "editComment" comment}}>Edit</button>
-            <button {{action "deleteComment" comment}}>Delete</button>
-          </div>
-        {{/if}}
-      </li>
-    {{/each}}
+            </p>
+            {{#if (equal comment.username currentUsername)}}
+              <div class="comment-actions">
+                <button {{action "editComment" comment}}>Edit</button>
+                <button {{action "deleteComment" comment}}>Delete</button>
+              </div>
+            {{/if}}
+          </li>
+        {{/each}}
+      </div>
+
+
+    </div>
+
   </div>
-
-
-</div>
-
-</div>
 
 </div>

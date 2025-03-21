@@ -30,29 +30,55 @@
     <button class="tab-button {{if (equal activeTab 'upload') 'active-tab'}}" {{action "setActiveTab" "upload"}}>Upload Video</button>
     <button class="tab-button {{if (equal activeTab 'likedVideos') 'active-tab'}}" {{action "setActiveTab" "likedVideos"}}>Liked Videos</button>
     <button class="tab-button {{if (equal activeTab 'dislikedVideos') 'active-tab'}}" {{action "setActiveTab" "dislikedVideos"}}>Disliked Videos</button>
+    <button class="tab-button {{if (equal activeTab 'userViewHistory') 'active-tab'}}" {{action "setActiveTab" "userViewHistory"}}>User View History</button>
   </div>
 
-  <div class="tab-content">
+    <div class="tab-content">
     {{#if (equal activeTab "yourVideos")}}
       <ul class="video-list">
         {{#each model.videos as |video|}}
           <li class="video-item">
             {{#link-to "video-details" video.file_name}}
-              <video class="thumbnail" preload="metadata" crossorigin="anonymous" autoplay muted loop>
+              <video class="thumbnail" preload="metadata" crossorigin="anonymous">
                 <source src="{{video.url}}" type="video/mp4">
               </video>
               <div class="video-details">
                 <h4 class="video-title">{{video.file_name}}</h4>
                 <p class="video-size">{{video.size}} MB</p>
-                <p class="video-date">Last Modified: {{video.last_modified}}</p>
+                <p class="video-date">{{time-ago video.last_modified}}</p>
               </div>
+
+
             {{/link-to}}
+            <button class="cancel-button" {{action "deleteVideo" video.file_name}}>delete</button>
+
           </li>
         {{else}}
           <li>No videos uploaded yet.</li>
         {{/each}}
+
       </ul>
     {{/if}}
+
+
+    {{#if (equal activeTab "userViewHistory")}}
+      <h3>User View History</h3>
+      <ul class="video-list">
+        {{#each viewHistory as |video|}}
+          <li class="video-item">
+            {{#link-to "video-details" video.file_name}}
+              <video class="thumbnail" preload="metadata" crossorigin="anonymous">
+                <source src="{{video.url}}" type="video/mp4">
+              </video>
+              <div class="video-details">
+                <h4 class="video-title">{{video.file_name}}</h4>
+              </div>
+            {{/link-to}}
+          </li>
+        {{/each}}
+      </ul>
+    {{/if}}
+
 
     {{#if (equal activeTab "upload")}}
       <div class="upload-section">
@@ -66,9 +92,25 @@
           <input type="text" id="hashtags" placeholder="Enter hashtags (comma-separated)">
         </div>
 
+        <div class="upload-input">
+          <label for="uploadType">Upload Type:</label>
+          <select id="uploadType" onchange={{action "changeUploadType" value="target.value"}}>
+            <option value="now">Upload Now</option>
+            <option value="schedule">Schedule Upload</option>
+          </select>
+        </div>
+
+        {{#if isScheduled}}
+          <div class="upload-input">
+            <label for="scheduleTime">Schedule Date & Time:</label>
+            <input type="datetime-local" id="scheduleTime">
+          </div>
+        {{/if}}
+
         <button class="upload-btn" {{action "uploadVideo"}}>Upload Video</button>
       </div>
     {{/if}}
+
 
     {{#if (equal activeTab "likedVideos")}}
       <ul class="video-list">
@@ -157,7 +199,7 @@
         </div>
 
         <div class="modal-footer">
-          <button class="update-button" {{action "updateUserInterests"}}>Update</button>
+          <button class="save-button" {{action "updateUserInterests"}}>Update</button>
           <button class="cancel-button" {{action "closeInterestModal"}}>Cancel</button>
         </div>
       </div>

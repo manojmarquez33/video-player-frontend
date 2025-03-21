@@ -7,7 +7,6 @@ export default Ember.Controller.extend({
   session: Ember.inject.service(),
 
   actions: {
-
     searchVideos() {
       let query = this.get("searchQuery").trim();
       let sessionService = this.get("session");
@@ -32,13 +31,30 @@ export default Ember.Controller.extend({
             dataType: "json",
             success: (data) => {
               console.log("Search results:", data);
-              this.set("model", data);
 
-              //this.send("fetchThumbnails", data);
+
+              let allRecommended = this.get("model.recommendedVideos") || [];
+             // let allOther = this.get("model.otherVideos") || [];
+
+
+              let newRecommended = [];
+              let newOther = [];
+
+              data.forEach(video => {
+                if (allRecommended.some(v => v.id === video.id)) {
+                  newRecommended.push(video);
+                } else {
+                  newOther.push(video);
+                }
+              });
+
+              this.set("model.recommendedVideos", newRecommended);
+              this.set("model.otherVideos", newOther);
             },
             error: (err) => {
               console.error("Search request failed", err);
-              this.set("model", []);
+              this.set("model.recommendedVideos", []);
+              this.set("model.otherVideos", []);
             }
           });
         })
@@ -81,25 +97,6 @@ export default Ember.Controller.extend({
           this.transitionToRoute("login");
         });
     },
-
-
-    // fetchThumbnails(videos) {
-    //   videos.forEach(video => {
-    //     $.ajax({
-    //       url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(video.fileName)}`,
-    //       type: "GET",
-    //       dataType: "json",
-    //       success: (metadata) => {
-    //         Ember.set(video, "url", metadata.url);
-    //         this.notifyPropertyChange("model");
-    //       },
-    //       error: (err) => {
-    //         console.error(`Failed to fetch metadata for ${video.fileName}`, err);
-    //       }
-    //     });
-    //   });
-    // }
-
 
   }
 });

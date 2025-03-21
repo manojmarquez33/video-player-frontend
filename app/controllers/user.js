@@ -1,6 +1,7 @@
 import Ember from "ember";
 
 
+
 export default Ember.Controller.extend({
   session: Ember.inject.service(),
   showInterestModal: false,
@@ -19,36 +20,54 @@ export default Ember.Controller.extend({
   editEmail: null,
   editProfilePicture: null,
   editFullname: null,
+  filename:'',
 
   init() {
     this._super(...arguments);
     this.fetchUserDetails();
     this.fetchUserVideos();
     this.fetchLikedAndDislikedVideos();
+    this.fetchUserViewHistory();
   },
 
   actions: {
+
     setActiveTab(tabName) {
       this.set("activeTab", tabName);
     },
 
+    changeUploadType(type) {
+      this.set("isScheduled", type === "schedule");
+    },
 
-    // fetchThumbnails(video) {
-    //   console.log("Fetching thumbnail for:", video);
-    //
-    //   if (video.url) {
-    //     video.thumbnail = video.url;
-    //   } else {
-    //     console.error("Video URL missing for thumbnail generation.");
-    //   }
-    // },
+    deleteVideo(fileName) {
+
+      Ember.$.ajax({
+        url: `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?video=${encodeURIComponent(fileName)}&delete=yes`,
+        type: "GET",
+        //processData: false,
+        //contentType: false,
+        xhrFields: { withCredentials: true },
+        success: (response) => {
+          console.log("server Response:", response);
+          alert("Deleted video successfully.");
+          this.fetchUserVideos();
+        },
+        error: (xhr) => {
+          alert("Failed to delete video.");
+          console.error(xhr);
+        },
+      });
+    },
 
     uploadVideo() {
       let fileInput = document.getElementById("videoFile");
       let hashtagsInput = document.getElementById("hashtags");
+      let uploadType = document.getElementById("uploadType").value;
+      let scheduleTimeInput = document.getElementById("scheduleTime");
 
       if (!fileInput.files.length) {
-        alert("Please select a vidoe file.");
+        alert("Please select a video file.");
         return;
       }
 
@@ -58,6 +77,17 @@ export default Ember.Controller.extend({
       formData.append("video", file);
       formData.append("hashtags", hashtags);
 
+      if (uploadType === "schedule") {
+        let scheduledTime = scheduleTimeInput.value;
+        if (!scheduledTime) {
+          alert("Please select a schedule time.");
+          return;
+        }
+        formData.append("scheduledTime", scheduledTime);
+      } else {
+        formData.append("scheduledTime", "now");
+      }
+
       Ember.$.ajax({
         url: "http://localhost:8080/VideoPlayer_war_exploded/VideoUploadServlet",
         type: "POST",
@@ -66,7 +96,7 @@ export default Ember.Controller.extend({
         contentType: false,
         xhrFields: { withCredentials: true },
         success: () => {
-          alert("Video uploaded successfully!");
+          alert(uploadType === "now" ? "Video uploaded successfully!" : "Video scheduled successfully!");
           this.fetchUserVideos();
         },
         error: (xhr) => {
@@ -138,7 +168,6 @@ export default Ember.Controller.extend({
       this.set("showProfileModal", true);
     },
 
-
     closeProfileModal() {
       this.set("showProfileModal", false);
     },
@@ -151,7 +180,6 @@ export default Ember.Controller.extend({
       console.log(`Updating field: ${field} with value: ${value}`);
       this.set(field, value);
     },
-
 
     uploadProfilePicture(event) {
       let file = event.target.files[0];
@@ -218,7 +246,6 @@ export default Ember.Controller.extend({
   },
 
 
-
   fetchUserDetails() {
     Ember.$.ajax({
       url: "http://localhost:8080/VideoPlayer_war_exploded/user-profile",
@@ -251,6 +278,26 @@ export default Ember.Controller.extend({
         console.error("Error fetching user videos:", xhr);
         alert("Failed to fetch uploaded videos.");
         this.set("loadingUserVideos", false);
+      },
+    });
+  },
+
+
+  fetchUserViewHistory() {
+
+    let url = `http://localhost:8080/VideoPlayer_war_exploded/VideoServlet?viewHistory=true`;
+
+    Ember.$.ajax({
+      url: url,
+      type: "GET",
+      xhrFields: { withCredentials: true },
+      success: (response) => {
+        console.log("Fetched user view history:", response);
+        this.set("viewHistory", response);
+      },
+      error: (xhr) => {
+        console.error("Error fetching user view history:", xhr.responseText);
+        alert("Failed to fetch view history.");
       },
     });
   },

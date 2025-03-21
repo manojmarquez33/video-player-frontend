@@ -9,7 +9,7 @@ body {
 
 /* Profile Container */
 .user-profile-container {
-  max-width: 900px;
+  max-width: 1300px;
   margin: 30px auto;
   padding: 20px;
   background: #ffffff;
@@ -21,7 +21,9 @@ body {
 .profile-header {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  gap:55px; /* Adds spacing between elements */
+  padding: 10px 20px;
+  justify-content: left;
   padding-bottom: 20px;
   border-bottom: 2px solid #eee;
 }
@@ -42,6 +44,7 @@ body {
 .profile-info h2 {
   font-size: 22px;
   margin: 5px 0;
+  padding-right: 470px;
 }
 
 .username {
@@ -61,8 +64,8 @@ body {
 
 /* Profile Picture */
 .profile-icon {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   background-color: #007bff;
   color: white;
   font-size: 30px;
@@ -215,8 +218,8 @@ body {
 
 /* Video Card */
 .video-item {
-  width: 260px; /* Fixed width */
-  height: 290px; /* Fixed height */
+  width: 280px; /* Fixed width */
+  height: 320px; /* Fixed height */
   background: #ffffff;
   padding: 10px;
   border-radius: 10px;

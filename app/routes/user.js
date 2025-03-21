@@ -32,7 +32,7 @@ export default Ember.Route.extend({
             console.error("Error fetching user details:", error);
             alert("Failed to fetch user details. Please try again.");
             this.transitionTo("login");
-          })
+          });
       })
       .catch((error) => {
         console.error("Session error:", error);

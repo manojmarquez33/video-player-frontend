@@ -7,6 +7,7 @@ import ZoomDrag from '../mixins/zoom-drag';
 import VideoUtils from '../mixins/video-utils';
 import $ from 'jquery';
 
+
 export default Ember.Controller.extend(
   VideoInitializer,
   VideoController,
@@ -50,6 +51,8 @@ export default Ember.Controller.extend(
           }
 
           this.fetchLikeStatus();
+          this.fetchViewCount();
+
         })
         .catch((error) => {
           console.error("Session error:", error);
@@ -59,7 +62,7 @@ export default Ember.Controller.extend(
         this.setupVideoPlayer();
         this.setupVideoDuration();
         this.setUpCommentMove();
-
+        this.videoWatchSec();
         Ember.$('.comments-section').on('click', '.timestamp', (event) => {
           this.send('handleTimeClick', event);
         });
@@ -79,6 +82,7 @@ export default Ember.Controller.extend(
         return;
       }
     }),
+
 
     setUpCommentMove() {
       const videoElement = document.getElementById("videoPlayer");
@@ -110,7 +114,9 @@ export default Ember.Controller.extend(
 
     showComments() {
       const videoElement = document.getElementById("videoPlayer");
-      if (!videoElement) { return; }
+      if (!videoElement) {
+        return;
+      }
 
       const currentSec = Math.floor(videoElement.currentTime);
 
@@ -120,7 +126,9 @@ export default Ember.Controller.extend(
       }
 
       const videoContainer = document.querySelector(".video-container");
-      if (!videoContainer) { return; }
+      if (!videoContainer) {
+        return;
+      }
 
       const containerWidth = videoContainer.offsetWidth;
 
@@ -207,7 +215,6 @@ export default Ember.Controller.extend(
     },
 
 
-
     getAvailableLane() {
       const container = document.querySelector(".video-container");
       const containerHeight = container ? container.offsetHeight : 400;
@@ -233,33 +240,123 @@ export default Ember.Controller.extend(
       }
 
       const top = chosenLane * laneHeight;
-      return { laneIndex: chosenLane, top: top };
+      return {laneIndex: chosenLane, top: top};
     },
+
+
+      videoWatchSec() {
+
+        //  const  videoElement = this.get();
+        const videoElement = document.getElementById("videoPlayer");
+
+        if (!videoElement) {
+          console.error("Video player not found.");
+          return;
+        }
+
+        videoElement.addEventListener("timeupdate", () => {
+
+          let mediaId = this.get('model.id');
+          let username = this.get('session.username');
+
+          if (!mediaId || this.isViewed) {
+            return;
+          }
+
+          const duration = videoElement.duration;
+          const currentTime = videoElement.currentTime;
+
+          if (currentTime >= duration * 0.3 && !this.isViewed) {
+            this.sendViewCount(mediaId, username);
+            this.isViewed = true;
+          }
+        });
+      },
+
+
+    sendViewCount(mediaId, username) {
+      if (!this.isViewed) {
+        this.isViewed = true;
+
+        Ember.$.ajax({
+          url: `${AppConfig.VideoServlet_API_URL}`,
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            username: username,
+            mediaId: mediaId,
+            updateViewCount: true,
+            updateViewHistory: true
+          }),
+          success: (response) => {
+            console.log(response);
+            this.set('viewCount', this.get('viewCount') + 1);
+            this.fetchViewCount();
+                },
+                error: (xhr) => {
+                  console.log("Error updating count", xhr);
+                }
+              });
+            }
+          },
+
+
+    fetchViewCount() {
+      let mediaId = this.get('model.id');
+      let username = this.get('session.user');
+
+      if (!mediaId || !username) {
+        console.error("Missing mediaId or username.", { mediaId, username });
+        return;
+      }
+
+      let apiUrl = `${AppConfig.VideoServlet_API_URL}?mediaId=${encodeURIComponent(mediaId)}&username=${encodeURIComponent(username)}`;
+
+      Ember.$.getJSON(apiUrl)
+        .then((response) => {
+          console.log("Fetched view count:", response);
+          this.set('viewCount', response.viewsCount || 0);
+        })
+        .fail((xhr) => {
+          console.error("Error fetching view count:", xhr.responseText);
+        });
+    },
+
 
 
     fetchLikeStatus() {
       let mediaId = this.get('model.id');
-        let username = this.get('session.user');
+      let username = this.get('session.user');
 
-      console.log("media :"+mediaId +" "+"username:"+username);
       if (!mediaId || !username) {
-        console.error("Missing mediaId or username.");
+        console.error("Missing mediaId or username. Retrying in 500ms...");
+        Ember.run.later(this, this.fetchLikeStatus, 500);
         return;
       }
 
+      console.log("Fetching like status for mediaId:", mediaId, "Username:", username);
+
       Ember.$.getJSON(`${AppConfig.VideoServlet_API_URL}`, { mediaId, username })
         .then((response) => {
-          console.log("Fetched like status:", response);
+          console.log("Received like status & counts:", response);
 
+          this.set('userLikeStatus', response.userLikeStatus);
+          this.set('likeCount', response.likeCount);
+          this.set('dislikeCount', response.dislikeCount);
           this.set('isLiked', response.userLikeStatus === 1);
           this.set('isDisliked', response.userLikeStatus === -1);
-          this.set('likeCount', response.likeCount || 0);
-          this.set('dislikeCount', response.dislikeCount || 0);
+
+          this.notifyPropertyChange('likeCount');
+          this.notifyPropertyChange('dislikeCount');
+          this.notifyPropertyChange('isLiked');
+          this.notifyPropertyChange('isDisliked');
         })
         .fail((xhr) => {
-          console.error("Error fetching like status:", xhr.responseText);
+          console.error("❌ Error fetching like status:", xhr.responseText);
         });
     },
+
+
 
     detectTime(comment) {
       let regex = /\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g;
@@ -296,13 +393,105 @@ export default Ember.Controller.extend(
 
 
     actions: {
-        likeVideo() {
-          let isLiked = this.get('isLiked');
-          let newStatus = isLiked ? 0 : 1;
-          this.send('updateLikeStatus', newStatus);
-        },
 
-      confirmDislike() {
+      likeVideo() {
+        let isLiked = this.get('isLiked');
+        let newStatus = isLiked ? 0 : 1;
+        this.send('updateLikeStatus', newStatus);
+      },
+
+      dislikeVideo() {
+        let isDisliked = this.get('isDisliked');
+        let newStatus = isDisliked ? 0 : -1;
+        this.send('updateLikeStatus', newStatus);
+      },
+
+      updateLikeStatus(status) {
+        let mediaId = this.get('model.id');
+        let username = this.get('session.user');
+
+        if (!mediaId || !username) {
+          console.error("Missing mediaId or username.");
+          return;
+        }
+
+        console.log("Updating like status:", { mediaId, username, status });
+
+        Ember.$.ajax({
+          url: `${AppConfig.VideoServlet_API_URL}`,
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ mediaId, username, likeStatus: status }),
+          success: (response) => {
+            console.log("Like status updated successfully:", response);
+
+            let alreadyLiked = this.get('isLiked');
+            let alreadyDisliked = this.get('isDisliked');
+
+            if (status === 1) {
+              this.set('isLiked', true);
+              this.set('isDisliked', false);
+
+              if (!alreadyLiked) {
+                this.set('likeCount', (this.get('likeCount') || 0) + 1);
+              }
+
+              if (alreadyDisliked) {
+                this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
+              }
+            }
+            else if (status === -1) {
+              this.set('isLiked', false);
+              this.set('isDisliked', true);
+
+              if (!alreadyDisliked) {
+                this.set('dislikeCount', (this.get('dislikeCount') || 0) + 1);
+              }
+
+              if (alreadyLiked) {
+                this.set('likeCount', Math.max((this.get('likeCount') || 0) - 1, 0));
+              }
+            }
+            else {
+              if (alreadyLiked) {
+                this.set('likeCount', Math.max((this.get('likeCount') || 0) - 1, 0));
+              }
+              if (alreadyDisliked) {
+                this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
+              }
+
+              this.set('isLiked', false);
+              this.set('isDisliked', false);
+            }
+
+            this.notifyPropertyChange('likeCount');
+            this.notifyPropertyChange('dislikeCount');
+          },
+          error: (jqXHR) => {
+            console.error("Error updating like status:", jqXHR.responseText);
+          }
+        });
+      },
+
+
+      handleTimeClick(event) {
+        let clickedElement = event && event.target;
+        if (clickedElement && clickedElement.dataset.time) {
+          let timestampText = clickedElement.dataset.time;
+          let timeParts = timestampText.split(":").map(Number);
+
+          let seconds = timeParts.length === 3 ? timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]
+            : timeParts[0] * 60 + timeParts[1];
+
+          let videoElement = document.getElementById("videoPlayer");
+          if (videoElement) {
+            videoElement.currentTime = seconds;
+            videoElement.play();
+          }
+        }
+      },
+
+      /*confirmDislike() {
         document.getElementById("dislikeModal").classList.remove("hidden");
       },
 
@@ -344,95 +533,7 @@ export default Ember.Controller.extend(
         });
 
         this.send("closeDislikeModal");
-      },
-
-        dislikeVideo() {
-          let isDisliked = this.get('isDisliked');
-          let newStatus = isDisliked ? 0 : -1;
-          this.send('updateLikeStatus', newStatus);
-        },
-
-      updateLikeStatus(status) {
-        let mediaId = this.get('model.id');
-        let username = this.get('session.user');
-
-
-        if (!mediaId || !username) {
-          console.error("Missing mediaId or username.");
-          return;
-        }
-        console.log("Updating like status:", { mediaId, username, status });
-        Ember.$.ajax({
-          url: `${AppConfig.VideoServlet_API_URL}`,
-          type: "POST",
-          contentType: "application/json",
-          data: JSON.stringify({ mediaId, username, likeStatus: status }),
-          success: (response) => {
-            console.log("Like status updated successfully:", response);
-
-            let alreadyLiked = this.get('isLiked');
-            let alreadyDisLiked = this.get('isDisliked');
-
-            if (status === 1) {
-              this.set('isLiked', true);
-              this.set('isDisliked', false);
-
-              if (!alreadyLiked) {
-                this.set('likeCount', (this.get('likeCount') || 0) + 1);
-              }
-
-              if (alreadyDisLiked) {
-                this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
-              }
-            }
-            else if (status === -1) {
-              this.set('isLiked', false);
-              this.set('isDisliked', true);
-
-              if (!alreadyDisLiked) {
-                this.set('dislikeCount', (this.get('dislikeCount') || 0) + 1);
-              }
-
-              if (alreadyLiked) {
-                this.set('likeCount', Math.max((this.get('likeCount') || 0) - 1, 0));
-              }
-            }
-            else {
-              if (alreadyLiked) {
-                this.set('likeCount', Math.max((this.get('likeCount') || 0) - 1, 0));
-              }
-              if (alreadyDisLiked) {
-                this.set('dislikeCount', Math.max((this.get('dislikeCount') || 0) - 1, 0));
-              }
-              this.set('isLiked', false);
-              this.set('isDisliked', false);
-            }
-            this.notifyPropertyChange('likeCount');
-            this.notifyPropertyChange('dislikeCount');
-          },
-          error: (jqXHR) => {
-            console.error("Error updating like status:", jqXHR.responseText);
-          }
-        });
-      },
-
-
-      handleTimeClick(event) {
-        let clickedElement = event && event.target;
-        if (clickedElement && clickedElement.dataset.time) {
-          let timestampText = clickedElement.dataset.time;
-          let timeParts = timestampText.split(":").map(Number);
-
-          let seconds = timeParts.length === 3 ? timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]
-            : timeParts[0] * 60 + timeParts[1];
-
-          let videoElement = document.getElementById("videoPlayer");
-          if (videoElement) {
-            videoElement.currentTime = seconds;
-            videoElement.play();
-          }
-        }
-      },
+      },*/
 
       moveToVideoTime(videoTime) {
         if (!videoTime) {
@@ -532,8 +633,6 @@ export default Ember.Controller.extend(
         });
       },
 
-
-
       viewComments() {
         let videoId = this.get('model.id');
 
@@ -561,7 +660,6 @@ export default Ember.Controller.extend(
           }
         });
       },
-
 
 
       editComment(comment) {
@@ -593,7 +691,7 @@ export default Ember.Controller.extend(
               response: jqXHR.responseText
             });
             this.set('commentStatusMessage', 'Failed to post comment. Please try again later.');
-            Ember.run.later(this, function() {
+            Ember.run.later(this, function () {
               this.set('commentStatusMessage', null);
             }, 3000);
           }
